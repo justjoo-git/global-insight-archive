@@ -149,12 +149,22 @@ a:focus-visible {
   cursor: pointer;
 }
 
+.masthead-subtitle {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.32em;
+  color: var(--ink-primary);
+  margin: 0.35rem 0 0.15rem;
+  padding-left: 0.32em; /* optical center alignment for letter-spacing */
+}
+
 .masthead-since-sub {
   font-family: var(--font-serif);
   font-style: italic;
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   color: var(--ink-secondary);
-  margin: 0.4rem 0 0;
+  margin: 0.25rem 0 0;
 }
 
 /* Edition Date Bar */
