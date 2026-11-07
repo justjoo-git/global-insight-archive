@@ -505,6 +505,37 @@ a:focus-visible {
   line-height: 1.6;
 }
 
+.news-item-link {
+  color: var(--ink-primary);
+  text-decoration: none;
+  display: inline;
+  transition: background-color 0.12s ease;
+}
+
+.news-item-link:hover,
+.news-item-link:focus-visible {
+  background-color: var(--paper-surface);
+  color: var(--ink-primary);
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 0.2em;
+}
+
+.news-ext-hint {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  color: var(--ink-muted);
+  margin-left: 0.15rem;
+  opacity: 0.55;
+  display: inline-block;
+}
+
+.news-item-link:hover .news-ext-hint,
+.news-item-link:focus-visible .news-ext-hint {
+  opacity: 1;
+  color: var(--ink-primary);
+}
+
 /* ==========================================================================
    Search Mode: Clean List Format (목록 형식)
    ========================================================================== */

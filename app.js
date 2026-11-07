@@ -103,6 +103,71 @@
     return safe.replace(re, '<mark class="kw-hit">$1</mark>');
   }
 
+  const STOP_WORDS = new Set([
+    "가운데", "따르면", "통해", "위해", "대한", "관련해", "관련", "대해",
+    "최근", "이번", "오는", "지난", "오늘", "내일", "올해", "현재", "향후",
+    "밝혔다", "발표했다", "전했다", "보도했다", "나타났다", "강조했다", "말했다",
+    "있다", "했다", "이다", "것으로", "이어", "함께", "대규모", "주요", "본격",
+    "추진", "진행", "개최", "예정", "발생", "기록", "수준", "영향", "우려"
+  ]);
+
+  function toMDY(dt) {
+    const m = String(dt.getMonth() + 1).padStart(2, "0");
+    const d = String(dt.getDate()).padStart(2, "0");
+    const y = dt.getFullYear();
+    return `${m}/${d}/${y}`;
+  }
+
+  function buildGoogleNewsUrl(text, countryKey, dateStr) {
+    const cMeta = ARCHIVE.countries[countryKey];
+    const countryKo = cMeta ? cMeta.ko : countryKey;
+
+    // Clean parenthetical annotations and quotes from the opening clause
+    const cleaned = String(text)
+      .replace(/\([^)]*\)/g, " ")
+      .replace(/['"“”‘’\[\]《》<>]/g, " ")
+      .slice(0, 95);
+
+    const rawTokens = cleaned.split(/[\s,.:;·/]+/).filter(Boolean);
+    const keywords = [];
+
+    if (countryKo && !cleaned.includes(countryKo)) {
+      keywords.push(countryKo);
+    }
+
+    for (let i = 0; i < rawTokens.length; i++) {
+      let tok = rawTokens[i];
+      // Strip trailing Korean particles if stem is at least 2 chars
+      const stripped = tok.replace(/(은|는|이|가|을|를|의|에|에서|으로|로|과|와|며|고|도|만|부터|까지)$/, "");
+      if (stripped.length >= 2) {
+        tok = stripped;
+      }
+      if (tok.length < 2) continue;
+      if (/^\d+(년|월|일|명|건|차)$/.test(tok)) continue;
+      if (STOP_WORDS.has(tok)) continue;
+      if (!keywords.includes(tok)) {
+        keywords.push(tok);
+      }
+      if (keywords.length >= 6) break;
+    }
+
+    const q = keywords.join(" ") || `${countryKo} 뉴스`;
+
+    // Build ±4 day window around dateStr for Google News search (tbs=cdr:1,cd_min:...,cd_max:...)
+    const parts = String(dateStr).split("-");
+    let tbsParam = "";
+    if (parts.length === 3) {
+      const baseDt = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+      const minDt = new Date(baseDt);
+      minDt.setDate(baseDt.getDate() - 4);
+      const maxDt = new Date(baseDt);
+      maxDt.setDate(baseDt.getDate() + 2);
+      tbsParam = `&tbs=cdr:1,cd_min:${toMDY(minDt)},cd_max:${toMDY(maxDt)}`;
+    }
+
+    return `https://www.google.com/search?tbm=nws&q=${encodeURIComponent(q)}${tbsParam}`;
+  }
+
   function initMetadataAndFilters() {
     const sinceDot = `Since ${formatDotDate(MIN_DATE)}`;
     elSinceLabel.textContent = sinceDot;
@@ -280,7 +345,16 @@
         const renderCol = (title, items) => {
           const listHtml =
             items.length > 0
-              ? `<ol class="news-list">${items.map((t) => `<li class="news-item">${escapeHtml(t)}</li>`).join("")}</ol>`
+              ? `<ol class="news-list">${items
+                  .map((t) => {
+                    const gUrl = buildGoogleNewsUrl(t, rec.c, dateStr);
+                    return `<li class="news-item">
+                      <a href="${escapeHtml(gUrl)}" target="_blank" rel="noopener noreferrer" class="news-item-link" title="구글 뉴스에서 해당 날짜 관련 기사 검색 ↗">
+                        ${escapeHtml(t)} <span class="news-ext-hint" aria-hidden="true">↗</span>
+                      </a>
+                    </li>`;
+                  })
+                  .join("")}</ol>`
               : `<p class="news-item" style="color:#777;">주요 뉴스 없음</p>`;
           return `
             <div class="news-col">
@@ -392,6 +466,8 @@
           ? `<a href="${escapeHtml(b.youtube_url)}" target="_blank" rel="noopener noreferrer" class="wiki-pill" title="${escapeHtml(b.title)}">📺 방송 ↗</a>`
           : "";
 
+        const gUrl = buildGoogleNewsUrl(item.text, item.country, item.date);
+
         return `
           <li class="search-row">
             <div class="search-row-meta">
@@ -406,7 +482,9 @@
               </div>
             </div>
             <div class="search-row-text">
-              ${highlightText(item.text, state.query)}
+              <a href="${escapeHtml(gUrl)}" target="_blank" rel="noopener noreferrer" class="news-item-link" title="구글 뉴스에서 해당 날짜 관련 기사 검색 ↗">
+                ${highlightText(item.text, state.query)} <span class="news-ext-hint" aria-hidden="true">↗</span>
+              </a>
             </div>
             <div class="search-row-links">
               ${ytLinkHtml}
