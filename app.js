@@ -111,13 +111,6 @@
     "추진", "진행", "개최", "예정", "발생", "기록", "수준", "영향", "우려"
   ]);
 
-  function toMDY(dt) {
-    const m = String(dt.getMonth() + 1).padStart(2, "0");
-    const d = String(dt.getDate()).padStart(2, "0");
-    const y = dt.getFullYear();
-    return `${m}/${d}/${y}`;
-  }
-
   function buildGoogleNewsUrl(text, countryKey, dateStr, preQuery) {
     let q = preQuery && String(preQuery).trim();
 
@@ -155,19 +148,7 @@
       q = keywords.join(" ") || `${countryKo || "한국"} 뉴스`;
     }
 
-    // Build ±4 day window around dateStr for Google News search (tbs=cdr:1,cd_min:...,cd_max:...)
-    const parts = String(dateStr).split("-");
-    let tbsParam = "";
-    if (parts.length === 3) {
-      const baseDt = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-      const minDt = new Date(baseDt);
-      minDt.setDate(baseDt.getDate() - 4);
-      const maxDt = new Date(baseDt);
-      maxDt.setDate(baseDt.getDate() + 2);
-      tbsParam = `&tbs=cdr:1,cd_min:${toMDY(minDt)},cd_max:${toMDY(maxDt)}`;
-    }
-
-    return `https://www.google.com/search?tbm=nws&q=${encodeURIComponent(q)}${tbsParam}`;
+    return `https://www.google.com/search?tbm=nws&q=${encodeURIComponent(q)}`;
   }
 
   function initMetadataAndFilters() {
