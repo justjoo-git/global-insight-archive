@@ -148,7 +148,18 @@
       q = keywords.join(" ") || `${countryKo || "한국"} 뉴스`;
     }
 
-    return `https://www.google.com/search?tbm=nws&q=${encodeURIComponent(q)}`;
+    if (countryKey === "korea") {
+      return `https://www.google.com/search?tbm=nws&q=${encodeURIComponent(q)}`;
+    }
+    const broadQuery = q.endsWith("뉴스") ? q : `${q} 뉴스`;
+    return `https://www.google.com/search?q=${encodeURIComponent(broadQuery)}`;
+  }
+
+  function isMobileDevice() {
+    return (
+      /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || "") ||
+      Boolean(window.matchMedia && window.matchMedia("(max-width: 768px)").matches)
+    );
   }
 
   function initMetadataAndFilters() {
@@ -323,6 +334,8 @@
       return;
     }
 
+    const linkTargetAttr = isMobileDevice() ? "" : ' target="_blank" rel="noopener noreferrer"';
+
     const blocksHtml = dayRecords
       .map((rec) => {
         const renderCol = (title, items, queries) => {
@@ -332,9 +345,9 @@
                   .map((t, idx) => {
                     const qStr = queries && queries[idx] ? queries[idx] : "";
                     const gUrl = buildGoogleNewsUrl(t, rec.c, dateStr, qStr);
-                    const tip = qStr ? `구글 뉴스 검색: ${qStr} ↗` : "구글 뉴스에서 해당 날짜 관련 기사 검색 ↗";
+                    const tip = qStr ? `구글 검색: ${qStr} ↗` : "구글에서 관련 기사 검색 ↗";
                     return `<li class="news-item">
-                      <a href="${escapeHtml(gUrl)}" target="_blank" rel="noopener noreferrer" class="news-item-link" title="${escapeHtml(tip)}">
+                      <a href="${escapeHtml(gUrl)}"${linkTargetAttr} class="news-item-link" title="${escapeHtml(tip)}">
                         ${escapeHtml(t)} <span class="news-ext-hint" aria-hidden="true">↗</span>
                       </a>
                     </li>`;
@@ -444,6 +457,7 @@
     }
 
     const visibleRows = rows.slice(0, state.searchLimit);
+    const linkTargetAttr = isMobileDevice() ? "" : ' target="_blank" rel="noopener noreferrer"';
     const listHtml = visibleRows
       .map((item) => {
         const cMeta = ARCHIVE.countries[item.country] || { ko: item.country, flag: "🌐", wiki_ko: "#" };
@@ -454,8 +468,8 @@
 
         const gUrl = buildGoogleNewsUrl(item.text, item.country, item.date, item.queryStr);
         const tip = item.queryStr
-          ? `구글 뉴스 검색: ${item.queryStr} ↗`
-          : "구글 뉴스에서 해당 날짜 관련 기사 검색 ↗";
+          ? `구글 검색: ${item.queryStr} ↗`
+          : "구글에서 관련 기사 검색 ↗";
 
         return `
           <li class="search-row">
@@ -471,7 +485,7 @@
               </div>
             </div>
             <div class="search-row-text">
-              <a href="${escapeHtml(gUrl)}" target="_blank" rel="noopener noreferrer" class="news-item-link" title="${escapeHtml(tip)}">
+              <a href="${escapeHtml(gUrl)}"${linkTargetAttr} class="news-item-link" title="${escapeHtml(tip)}">
                 ${highlightText(item.text, state.query)} <span class="news-ext-hint" aria-hidden="true">↗</span>
               </a>
             </div>
