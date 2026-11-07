@@ -1,0 +1,493 @@
+/* ==========================================================================
+   글로벌 인사이트 뉴스 아카이브 — Classic Black & White Newspaper Stylesheet
+   ========================================================================== */
+
+:root {
+  --paper-bg: #fcfbf9;
+  --paper-surface: #f4f2ed;
+  --ink-primary: #111111;
+  --ink-secondary: #333333;
+  --ink-muted: #595959;
+  --rule-heavy: #111111;
+  --rule-light: #cccccc;
+  --rule-hairline: #e2e0da;
+  --highlight-bg: #111111;
+  --highlight-fg: #fcfbf9;
+  --font-serif: "AppleMyungjo", "Batang", "NanumMyeongjo", "Noto Serif KR", Georgia, "Times New Roman", serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Malgun Gothic", sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 100%;
+  background-color: var(--paper-bg);
+  color: var(--ink-primary);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  line-height: 1.65;
+  text-align: start;
+  overflow-wrap: break-word;
+  background-color: var(--paper-bg);
+  color: var(--ink-primary);
+}
+
+h1, h2, h3, h4 {
+  text-wrap: balance;
+  margin-top: 0;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+p, li, .country-summary {
+  text-wrap: pretty;
+}
+
+a {
+  color: var(--ink-primary);
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+a:hover,
+a:focus-visible {
+  background-color: var(--ink-primary);
+  color: var(--paper-bg);
+  text-decoration: none;
+}
+
+/* Main Shell */
+.newspaper-shell {
+  max-width: 78rem;
+  margin: 0 auto;
+  padding: 1.25rem 1.5rem 4rem;
+}
+
+/* Masthead */
+.masthead {
+  border-top: 0.25rem solid var(--rule-heavy);
+  border-bottom: 0.25rem double var(--rule-heavy);
+  margin-bottom: 1.5rem;
+}
+
+.masthead-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--rule-heavy);
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+}
+
+.since-label {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  letter-spacing: 0.03em;
+  color: var(--ink-primary);
+}
+
+.masthead-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid var(--rule-heavy);
+  background: var(--paper-bg);
+  color: var(--ink-primary);
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.action-btn:hover {
+  background: var(--ink-primary);
+  color: var(--paper-bg);
+}
+
+.action-btn-primary {
+  background: var(--ink-primary);
+  color: var(--paper-bg);
+}
+
+.action-btn-primary:hover {
+  background: var(--ink-secondary);
+  color: var(--paper-bg);
+}
+
+.masthead-title-block {
+  text-align: center;
+  padding: 1.35rem 0 1rem;
+}
+
+.masthead-title {
+  font-size: clamp(2rem, 1.35rem + 3vw, 3.25rem);
+  line-height: 1.15;
+  margin: 0;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.masthead-since-sub {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 0.9375rem;
+  color: var(--ink-secondary);
+  margin: 0.4rem 0 0;
+}
+
+/* Edition Date Bar */
+.edition-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--rule-heavy);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+}
+
+.edition-date-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.current-edition-label {
+  font-size: 0.9375rem;
+  letter-spacing: -0.01em;
+}
+
+.date-step-btn {
+  background: transparent;
+  border: 1px solid var(--rule-light);
+  color: var(--ink-secondary);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  padding: 0.18rem 0.55rem;
+  cursor: pointer;
+}
+
+.date-step-btn:hover:not(:disabled) {
+  border-color: var(--rule-heavy);
+  color: var(--ink-primary);
+  background: var(--paper-surface);
+}
+
+.date-step-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* Toggleable Search Panel (Hidden unless Search Button Clicked) */
+.search-drawer {
+  background-color: var(--paper-surface);
+  border: 2px solid var(--rule-heavy);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.75rem;
+}
+
+.search-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-sans);
+}
+
+.search-input-wrap {
+  flex: 1 1 18rem;
+}
+
+.search-input-wrap input {
+  width: 100%;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--rule-heavy);
+  background: #ffffff;
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  color: var(--ink-primary);
+}
+
+.filter-select {
+  padding: 0.45rem 0.65rem;
+  border: 1px solid var(--rule-heavy);
+  background: #ffffff;
+  color: var(--ink-primary);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+/* Front Page: Today's Country Sections */
+.country-article-block {
+  padding: 1.35rem 0 1.6rem;
+  border-bottom: 1px solid var(--rule-heavy);
+}
+
+.country-article-block:last-child {
+  border-bottom: none;
+}
+
+.country-header-line {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.45rem;
+}
+
+.country-title {
+  font-size: clamp(1.3rem, 1.1rem + 0.8vw, 1.65rem);
+  margin: 0;
+}
+
+.country-title .en-label {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--ink-muted);
+  margin-left: 0.4rem;
+}
+
+.country-meta-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+}
+
+.wiki-pill {
+  padding: 0.12rem 0.45rem;
+  border: 1px solid var(--rule-light);
+  text-decoration: none;
+  color: var(--ink-secondary);
+}
+
+.wiki-pill:hover {
+  border-color: var(--rule-heavy);
+  background: var(--ink-primary);
+  color: var(--paper-bg);
+}
+
+.country-brief-box {
+  background-color: var(--paper-surface);
+  border-left: 3px solid var(--rule-heavy);
+  padding: 0.55rem 0.85rem;
+  margin-bottom: 0.9rem;
+  font-size: 0.875rem;
+  color: var(--ink-secondary);
+}
+
+.country-brief-specs {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+  margin-bottom: 0.25rem;
+}
+
+.country-brief-specs strong {
+  color: var(--ink-primary);
+}
+
+.country-summary {
+  margin: 0;
+  max-width: 80ch;
+  line-height: 1.55;
+  color: var(--ink-primary);
+}
+
+/* 3-Column Newspaper Grid (Used on Front Page Today's News) */
+.newspaper-columns {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+
+.news-col {
+  border-right: 1px solid var(--rule-hairline);
+  padding-right: 1.1rem;
+}
+
+.news-col:last-child {
+  border-right: none;
+  padding-right: 0;
+}
+
+.cat-header {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--rule-heavy);
+  padding-bottom: 0.2rem;
+  margin-bottom: 0.5rem;
+  color: var(--ink-secondary);
+}
+
+.news-list {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.news-item {
+  margin-bottom: 0.5rem;
+  max-width: 80ch;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+/* ==========================================================================
+   Search Mode: Clean List Format (목록 형식)
+   ========================================================================== */
+
+.search-mode-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.65rem;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid var(--rule-heavy);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+}
+
+.search-results-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.search-row {
+  display: grid;
+  grid-template-columns: 11.5rem 1fr auto;
+  gap: 0.75rem 1.25rem;
+  align-items: baseline;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--rule-hairline);
+}
+
+.search-row:hover {
+  background-color: var(--paper-surface);
+}
+
+.search-row-meta {
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  color: var(--ink-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.search-row-date {
+  font-weight: 700;
+  color: var(--ink-primary);
+}
+
+.search-row-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.badge-country {
+  font-weight: 700;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  color: var(--ink-primary);
+  text-decoration: underline;
+}
+
+.badge-cat {
+  font-size: 0.72rem;
+  padding: 0.05rem 0.35rem;
+  border: 1px solid var(--rule-light);
+  color: var(--ink-muted);
+}
+
+.search-row-text {
+  max-width: 80ch;
+  font-size: 0.96875rem;
+  line-height: 1.6;
+}
+
+.search-row-links {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+/* Keyword Highlight */
+mark.kw-hit {
+  background-color: var(--highlight-bg);
+  color: var(--highlight-fg);
+  padding: 0.05rem 0.25rem;
+  font-weight: 700;
+}
+
+.load-more-container {
+  text-align: center;
+  margin: 2rem 0;
+}
+
+/* Footer */
+.newspaper-footer {
+  margin-top: 3rem;
+  padding-top: 1rem;
+  border-top: 3px double var(--rule-heavy);
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  color: var(--ink-muted);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+@media (max-width: 58rem) {
+  .newspaper-columns {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  .news-col {
+    border-right: none;
+    padding-right: 0;
+    border-bottom: 1px solid var(--rule-hairline);
+    padding-bottom: 0.5rem;
+  }
+  .search-row {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+  }
+}

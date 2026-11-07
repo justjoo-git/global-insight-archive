@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>글로벌 인사이트 뉴스 아카이브</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="newspaper-shell">
+    <!-- Classic Broadsheet Masthead -->
+    <header class="masthead">
+      <div class="masthead-top-row">
+        <span id="sinceLabel" class="since-label">Since 2025. 10. 15.</span>
+        <div class="masthead-actions">
+          <a href="https://www.youtube.com/@Deep_Insight_Global" target="_blank" rel="noopener noreferrer" class="action-btn">
+            📺 유튜브 채널 ↗
+          </a>
+          <button type="button" id="toggleSearchBtn" class="action-btn action-btn-primary" aria-expanded="false" aria-controls="searchDrawer">
+            🔍 뉴스 검색
+          </button>
+        </div>
+      </div>
+
+      <div class="masthead-title-block">
+        <h1 class="masthead-title" id="homeTitleBtn" title="오늘자 첫 화면으로 이동">글로벌 인사이트 뉴스 아카이브</h1>
+        <p class="masthead-since-sub" id="mastheadSub">Since October 15, 2025 · Global Daily News Briefing</p>
+      </div>
+
+      <!-- Edition Sub-bar (Shows Today's Edition Date on Front Page, or Search Mode Indicator) -->
+      <div class="edition-bar" id="editionBar">
+        <div class="edition-date-nav">
+          <button type="button" id="prevDateBtn" class="date-step-btn" title="이전 날짜 지면">◀ 이전호</button>
+          <strong id="currentEditionLabel" class="current-edition-label">오늘자 지면 로딩 중...</strong>
+          <button type="button" id="nextDateBtn" class="date-step-btn" title="다음 날짜 지면">다음호 ▶</button>
+          <button type="button" id="todayDateBtn" class="date-step-btn" style="display:none;">오늘자 지면으로</button>
+        </div>
+        <div id="editionYoutubeArea"></div>
+      </div>
+    </header>
+
+    <!-- Collapsible Search & Filter Panel (Hidden by Default) -->
+    <section id="searchDrawer" class="search-drawer" hidden aria-label="뉴스 검색 및 필터">
+      <form id="searchForm" class="search-form">
+        <div class="search-input-wrap">
+          <input
+            type="search"
+            id="searchInput"
+            placeholder="검색어를 입력하세요 (예: 반도체, 관세, 금리, 원전, 트럼프...)"
+            aria-label="검색어 입력"
+          >
+        </div>
+
+        <select id="countrySelect" class="filter-select" aria-label="국가 선택">
+          <option value="ALL">전체 국가</option>
+        </select>
+
+        <select id="categorySelect" class="filter-select" aria-label="분야 선택">
+          <option value="ALL">전체 분야</option>
+          <option value="POLITICS">정치 · 외교</option>
+          <option value="ECONOMY">경제 · 기술</option>
+          <option value="SOCIETY">문화 · 사회</option>
+        </select>
+
+        <select id="monthSelect" class="filter-select" aria-label="연월 선택">
+          <option value="ALL">전체 기간</option>
+        </select>
+
+        <button type="submit" class="action-btn action-btn-primary">검색 실행</button>
+        <button type="button" id="resetSearchBtn" class="action-btn">오늘자 첫 화면으로</button>
+      </form>
+    </section>
+
+    <!-- Main Content Area (Front Page Today's Edition OR Search Results List) -->
+    <main id="mainContent">
+      <p>데이터를 불러오는 중입니다...</p>
+    </main>
+
+    <!-- Footer & Copyright Disclaimer -->
+    <footer class="newspaper-footer">
+      <div>
+        <strong>글로벌 인사이트 뉴스 아카이브</strong> (<span id="footerSince">Since 2025. 10. 15.</span>) ·
+        본 사이트의 콘텐츠는 공개된 글로벌 시사 사실(Fact)을 바탕으로 AI가 자체 요약·재구성한 참고용 브리핑이며, 특정 언론사의 원문 기사를 전재하지 않습니다.
+      </div>
+      <div>
+        <a href="https://www.youtube.com/@Deep_Insight_Global" target="_blank" rel="noopener noreferrer">YouTube @Deep_Insight_Global ↗</a>
+      </div>
+    </footer>
+  </div>
+
+  <script src="data/archive_data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
