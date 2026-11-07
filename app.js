@@ -145,14 +145,14 @@
         if (keywords.length >= 4) break;
       }
 
-      q = keywords.join(" ") || `${countryKo || "한국"} 뉴스`;
+      q = keywords.join(" ") || `${countryKo || "한국"}`;
     }
 
-    if (countryKey === "korea") {
-      return `https://www.google.com/search?tbm=nws&q=${encodeURIComponent(q)}`;
-    }
-    const broadQuery = q.endsWith("뉴스") ? q : `${q} 뉴스`;
-    return `https://www.google.com/search?q=${encodeURIComponent(broadQuery)}`;
+    const parts = String(dateStr || "").split("-");
+    const ymSuffix =
+      parts.length >= 2 ? `${parts[0]}년 ${Number(parts[1])}월` : "";
+    const fullQuery = [q, ymSuffix, "뉴스"].filter(Boolean).join(" ");
+    return `https://www.google.com/search?q=${encodeURIComponent(fullQuery)}`;
   }
 
   function isMobileDevice() {
