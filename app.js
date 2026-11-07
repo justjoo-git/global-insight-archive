@@ -118,40 +118,42 @@
     return `${m}/${d}/${y}`;
   }
 
-  function buildGoogleNewsUrl(text, countryKey, dateStr) {
-    const cMeta = ARCHIVE.countries[countryKey];
-    const countryKo = cMeta ? cMeta.ko : countryKey;
+  function buildGoogleNewsUrl(text, countryKey, dateStr, preQuery) {
+    let q = preQuery && String(preQuery).trim();
 
-    // Clean parenthetical annotations and quotes from the opening clause
-    const cleaned = String(text)
-      .replace(/\([^)]*\)/g, " ")
-      .replace(/['"“”‘’\[\]《》<>]/g, " ")
-      .slice(0, 95);
+    if (!q) {
+      const cMeta = ARCHIVE.countries[countryKey];
+      const countryKo = countryKey === "korea" ? "" : cMeta ? cMeta.ko : countryKey;
 
-    const rawTokens = cleaned.split(/[\s,.:;·/]+/).filter(Boolean);
-    const keywords = [];
+      const cleaned = String(text)
+        .replace(/\([^)]*\)/g, " ")
+        .replace(/['"“”‘’\[\]《》<>]/g, " ")
+        .slice(0, 95);
 
-    if (countryKo && !cleaned.includes(countryKo)) {
-      keywords.push(countryKo);
-    }
+      const rawTokens = cleaned.split(/[\s,.:;·/]+/).filter(Boolean);
+      const keywords = [];
 
-    for (let i = 0; i < rawTokens.length; i++) {
-      let tok = rawTokens[i];
-      // Strip trailing Korean particles if stem is at least 2 chars
-      const stripped = tok.replace(/(은|는|이|가|을|를|의|에|에서|으로|로|과|와|며|고|도|만|부터|까지)$/, "");
-      if (stripped.length >= 2) {
-        tok = stripped;
+      if (countryKo && !cleaned.includes(countryKo)) {
+        keywords.push(countryKo);
       }
-      if (tok.length < 2) continue;
-      if (/^\d+(년|월|일|명|건|차)$/.test(tok)) continue;
-      if (STOP_WORDS.has(tok)) continue;
-      if (!keywords.includes(tok)) {
-        keywords.push(tok);
-      }
-      if (keywords.length >= 6) break;
-    }
 
-    const q = keywords.join(" ") || `${countryKo} 뉴스`;
+      for (let i = 0; i < rawTokens.length; i++) {
+        let tok = rawTokens[i];
+        const stripped = tok.replace(/(은|는|이|가|을|를|의|에|에서|으로|로|과|와|며|고|도|만|부터|까지)$/, "");
+        if (stripped.length >= 2) {
+          tok = stripped;
+        }
+        if (tok.length < 2) continue;
+        if (/^\d+(년|월|일|명|건|차)$/.test(tok)) continue;
+        if (STOP_WORDS.has(tok)) continue;
+        if (!keywords.includes(tok)) {
+          keywords.push(tok);
+        }
+        if (keywords.length >= 4) break;
+      }
+
+      q = keywords.join(" ") || `${countryKo || "한국"} 뉴스`;
+    }
 
     // Build ±4 day window around dateStr for Google News search (tbs=cdr:1,cd_min:...,cd_max:...)
     const parts = String(dateStr).split("-");
@@ -342,14 +344,16 @@
 
     const blocksHtml = dayRecords
       .map((rec) => {
-        const renderCol = (title, items) => {
+        const renderCol = (title, items, queries) => {
           const listHtml =
             items.length > 0
               ? `<ol class="news-list">${items
-                  .map((t) => {
-                    const gUrl = buildGoogleNewsUrl(t, rec.c, dateStr);
+                  .map((t, idx) => {
+                    const qStr = queries && queries[idx] ? queries[idx] : "";
+                    const gUrl = buildGoogleNewsUrl(t, rec.c, dateStr, qStr);
+                    const tip = qStr ? `구글 뉴스 검색: ${qStr} ↗` : "구글 뉴스에서 해당 날짜 관련 기사 검색 ↗";
                     return `<li class="news-item">
-                      <a href="${escapeHtml(gUrl)}" target="_blank" rel="noopener noreferrer" class="news-item-link" title="구글 뉴스에서 해당 날짜 관련 기사 검색 ↗">
+                      <a href="${escapeHtml(gUrl)}" target="_blank" rel="noopener noreferrer" class="news-item-link" title="${escapeHtml(tip)}">
                         ${escapeHtml(t)} <span class="news-ext-hint" aria-hidden="true">↗</span>
                       </a>
                     </li>`;
@@ -368,9 +372,9 @@
           <article class="country-article-block">
             ${renderCountryBriefBox(rec.c, true)}
             <div class="newspaper-columns">
-              ${renderCol("정치 · 외교 (POLITICS)", rec.p)}
-              ${renderCol("경제 · 기술 (ECONOMY & TECH)", rec.e)}
-              ${renderCol("문화 · 사회 (CULTURE & SOCIETY)", rec.s)}
+              ${renderCol("정치 · 외교 (POLITICS)", rec.p, rec.pq)}
+              ${renderCol("경제 · 기술 (ECONOMY & TECH)", rec.e, rec.eq)}
+              ${renderCol("문화 · 사회 (CULTURE & SOCIETY)", rec.s, rec.sq)}
             </div>
           </article>
         `;
@@ -386,7 +390,7 @@
     const q = state.query.trim().toLowerCase();
     const terms = q ? q.split(/\s+/).filter(Boolean) : [];
 
-    // Flatten matching items into clean list rows: { date, country, catKey, text }
+    // Flatten matching items into clean list rows: { date, country, catKey, text, queryStr }
     const rows = [];
 
     for (let i = 0; i < ARCHIVE.records.length; i++) {
@@ -405,24 +409,25 @@
             rec.c.includes(t)
         );
 
-      const pushCatItems = (catKey, list) => {
+      const pushCatItems = (catKey, list, qList) => {
         if (state.category !== "ALL" && state.category !== catKey) return;
         for (let j = 0; j < list.length; j++) {
           const txt = list[j];
+          const queryStr = qList && qList[j] ? qList[j] : "";
           if (terms.length === 0 || countryNameMatched) {
-            rows.push({ date: rec.d, country: rec.c, catKey, text: txt });
+            rows.push({ date: rec.d, country: rec.c, catKey, text: txt, queryStr });
           } else {
             const lower = txt.toLowerCase();
             if (terms.every((t) => lower.includes(t))) {
-              rows.push({ date: rec.d, country: rec.c, catKey, text: txt });
+              rows.push({ date: rec.d, country: rec.c, catKey, text: txt, queryStr });
             }
           }
         }
       };
 
-      pushCatItems("POLITICS", rec.p);
-      pushCatItems("ECONOMY", rec.e);
-      pushCatItems("SOCIETY", rec.s);
+      pushCatItems("POLITICS", rec.p, rec.pq);
+      pushCatItems("ECONOMY", rec.e, rec.eq);
+      pushCatItems("SOCIETY", rec.s, rec.sq);
     }
 
     // If a single country is selected, show its Country Introduction Box at the top of the list
@@ -466,7 +471,10 @@
           ? `<a href="${escapeHtml(b.youtube_url)}" target="_blank" rel="noopener noreferrer" class="wiki-pill" title="${escapeHtml(b.title)}">📺 방송 ↗</a>`
           : "";
 
-        const gUrl = buildGoogleNewsUrl(item.text, item.country, item.date);
+        const gUrl = buildGoogleNewsUrl(item.text, item.country, item.date, item.queryStr);
+        const tip = item.queryStr
+          ? `구글 뉴스 검색: ${item.queryStr} ↗`
+          : "구글 뉴스에서 해당 날짜 관련 기사 검색 ↗";
 
         return `
           <li class="search-row">
@@ -482,7 +490,7 @@
               </div>
             </div>
             <div class="search-row-text">
-              <a href="${escapeHtml(gUrl)}" target="_blank" rel="noopener noreferrer" class="news-item-link" title="구글 뉴스에서 해당 날짜 관련 기사 검색 ↗">
+              <a href="${escapeHtml(gUrl)}" target="_blank" rel="noopener noreferrer" class="news-item-link" title="${escapeHtml(tip)}">
                 ${highlightText(item.text, state.query)} <span class="news-ext-hint" aria-hidden="true">↗</span>
               </a>
             </div>
