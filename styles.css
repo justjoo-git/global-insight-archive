@@ -141,13 +141,11 @@ a:focus-visible {
   padding: 1.35rem 0 1rem;
 }
 
+.brand-accent {
+  color: #8b1a1a;
+}
+
 .masthead-title {
-  display: inline-flex;
-  align-items: flex-start;
-  justify-content: center;
-  flex-wrap: wrap;
-  column-gap: 0.28em;
-  row-gap: 0.15rem;
   font-size: clamp(2rem, 1.35rem + 3vw, 3.25rem);
   line-height: 1.15;
   margin: 0;
@@ -155,21 +153,13 @@ a:focus-visible {
   cursor: pointer;
 }
 
-.masthead-brand-col {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-}
-
 .masthead-subtitle {
   font-family: var(--font-serif);
-  font-size: clamp(0.88rem, 0.78rem + 0.45vw, 1.05rem);
-  font-weight: 700;
-  letter-spacing: 0.42em;
-  color: var(--ink-primary);
-  line-height: 1.2;
-  margin: 0.22rem 0 0.1rem;
-  padding-left: 0.42em; /* optical center alignment under 글로벌 인사이트 */
+  font-size: 1.08rem;
+  font-weight: 800;
+  letter-spacing: 0.36em;
+  margin: 0.35rem 0 0.15rem;
+  padding-left: 0.36em; /* optical center alignment for letter-spacing */
 }
 
 .masthead-since-sub {
