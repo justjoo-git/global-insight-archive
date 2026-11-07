@@ -14,12 +14,16 @@
 
   // Unique sorted dates descending (index 0 = latest / today's edition)
   const ALL_DATES = Array.from(new Set(ARCHIVE.records.map((r) => r.d))).sort().reverse();
+  const ALL_DATES_SET = new Set(ALL_DATES);
   const LATEST_DATE = ALL_DATES[0] || "";
   const MIN_DATE = ARCHIVE.stats.min_date || "2025-10-15";
+  const ALL_YEARS = Array.from(new Set(ALL_DATES.map((d) => Number(d.slice(0, 4))))).sort((a, b) => b - a);
 
   const state = {
     mode: "frontpage", // "frontpage" | "search"
     currentDate: LATEST_DATE,
+    calYear: Number((LATEST_DATE || "2026-11-07").slice(0, 4)),
+    calMonth: Number((LATEST_DATE || "2026-11-07").slice(5, 7)),
     query: "",
     country: "ALL",
     category: "ALL",
@@ -41,7 +45,16 @@
   const elResetSearchBtn = document.getElementById("resetSearchBtn");
   const elHomeTitleBtn = document.getElementById("homeTitleBtn");
   const elEditionBar = document.getElementById("editionBar");
+  const elCalendarTriggerWrap = document.getElementById("calendarTriggerWrap");
   const elCurrentEditionLabel = document.getElementById("currentEditionLabel");
+  const elCalendarPopover = document.getElementById("calendarPopover");
+  const elCalPrevMonthBtn = document.getElementById("calPrevMonthBtn");
+  const elCalNextMonthBtn = document.getElementById("calNextMonthBtn");
+  const elCalYearSelect = document.getElementById("calYearSelect");
+  const elCalMonthSelect = document.getElementById("calMonthSelect");
+  const elCalDaysGrid = document.getElementById("calDaysGrid");
+  const elCalGoLatestBtn = document.getElementById("calGoLatestBtn");
+  const elCalCloseBtn = document.getElementById("calCloseBtn");
   const elPrevDateBtn = document.getElementById("prevDateBtn");
   const elNextDateBtn = document.getElementById("nextDateBtn");
   const elTodayDateBtn = document.getElementById("todayDateBtn");
@@ -112,6 +125,79 @@
       opt.textContent = `${ym.slice(0, 4)}년 ${Number(ym.slice(5, 7))}월`;
       elMonthSelect.appendChild(opt);
     });
+
+    // Populate Calendar Year & Month Selects
+    ALL_YEARS.forEach((yr) => {
+      const opt = document.createElement("option");
+      opt.value = String(yr);
+      opt.textContent = `${yr}년`;
+      elCalYearSelect.appendChild(opt);
+    });
+
+    for (let m = 1; m <= 12; m++) {
+      const opt = document.createElement("option");
+      opt.value = String(m);
+      opt.textContent = `${m}월`;
+      elCalMonthSelect.appendChild(opt);
+    }
+  }
+
+  function renderCalendarGrid() {
+    const yr = state.calYear;
+    const mo = state.calMonth;
+    elCalYearSelect.value = String(yr);
+    elCalMonthSelect.value = String(mo);
+
+    const firstDayOfWeek = new Date(yr, mo - 1, 1).getDay();
+    const daysInMonth = new Date(yr, mo, 0).getDate();
+    const ymPrefix = `${yr}-${String(mo).padStart(2, "0")}`;
+
+    const cells = [];
+    for (let i = 0; i < firstDayOfWeek; i++) {
+      cells.push(`<div class="cal-day-cell cal-day-empty"></div>`);
+    }
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dStr = `${ymPrefix}-${String(d).padStart(2, "0")}`;
+      const isAvail = ALL_DATES_SET.has(dStr);
+      const isSel = dStr === state.currentDate;
+      const hasBroadcast = Boolean(ARCHIVE.broadcasts[dStr]);
+
+      if (isAvail) {
+        const dotHtml = hasBroadcast ? `<span class="cal-day-dot" title="유튜브 방송 있음"></span>` : "";
+        const selClass = isSel ? " cal-day-selected" : "";
+        cells.push(
+          `<button type="button" class="cal-day-cell cal-day-available${selClass}" data-date="${dStr}" title="${dStr} 발행 지면 보기">
+            <span>${d}</span>
+            ${dotHtml}
+          </button>`
+        );
+      } else {
+        cells.push(
+          `<button type="button" class="cal-day-cell cal-day-disabled" disabled title="수집된 뉴스 없음">
+            <span>${d}</span>
+          </button>`
+        );
+      }
+    }
+
+    elCalDaysGrid.innerHTML = cells.join("");
+  }
+
+  function openCalendarPopover() {
+    const parts = (state.currentDate || LATEST_DATE).split("-");
+    if (parts.length === 3) {
+      state.calYear = Number(parts[0]);
+      state.calMonth = Number(parts[1]);
+    }
+    renderCalendarGrid();
+    elCalendarPopover.hidden = false;
+    elCurrentEditionLabel.setAttribute("aria-expanded", "true");
+  }
+
+  function closeCalendarPopover() {
+    elCalendarPopover.hidden = true;
+    elCurrentEditionLabel.setAttribute("aria-expanded", "false");
   }
 
   function renderCountryBriefBox(countryKey, showHistoryBtn) {
@@ -150,7 +236,7 @@
     elEditionBar.hidden = false;
     const dateStr = state.currentDate;
     const isLatest = dateStr === LATEST_DATE;
-    elCurrentEditionLabel.textContent = `${formatKoreanDate(dateStr)} ${isLatest ? "오늘자 발행 지면" : "발행 지면"}`;
+    elCurrentEditionLabel.textContent = `📅 ${formatKoreanDate(dateStr)} ${isLatest ? "오늘자 발행 지면" : "발행 지면"} ▾`;
 
     const idx = ALL_DATES.indexOf(dateStr);
     elPrevDateBtn.disabled = idx < 0 || idx >= ALL_DATES.length - 1;
@@ -435,8 +521,80 @@
 
   elTodayDateBtn.addEventListener("click", () => {
     state.currentDate = LATEST_DATE;
+    closeCalendarPopover();
     render();
     window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+
+  // Calendar Popover Events
+  elCurrentEditionLabel.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (elCalendarPopover.hidden) {
+      openCalendarPopover();
+    } else {
+      closeCalendarPopover();
+    }
+  });
+
+  elCalYearSelect.addEventListener("change", () => {
+    state.calYear = Number(elCalYearSelect.value);
+    renderCalendarGrid();
+  });
+
+  elCalMonthSelect.addEventListener("change", () => {
+    state.calMonth = Number(elCalMonthSelect.value);
+    renderCalendarGrid();
+  });
+
+  elCalPrevMonthBtn.addEventListener("click", () => {
+    state.calMonth -= 1;
+    if (state.calMonth < 1) {
+      state.calMonth = 12;
+      state.calYear -= 1;
+    }
+    renderCalendarGrid();
+  });
+
+  elCalNextMonthBtn.addEventListener("click", () => {
+    state.calMonth += 1;
+    if (state.calMonth > 12) {
+      state.calMonth = 1;
+      state.calYear += 1;
+    }
+    renderCalendarGrid();
+  });
+
+  elCalDaysGrid.addEventListener("click", (e) => {
+    const dayBtn = e.target.closest(".cal-day-available");
+    if (!dayBtn) return;
+    const targetDate = dayBtn.getAttribute("data-date");
+    if (targetDate) {
+      state.currentDate = targetDate;
+      closeCalendarPopover();
+      render();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  });
+
+  elCalGoLatestBtn.addEventListener("click", () => {
+    state.currentDate = LATEST_DATE;
+    closeCalendarPopover();
+    render();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+
+  elCalCloseBtn.addEventListener("click", closeCalendarPopover);
+
+  document.addEventListener("click", (e) => {
+    if (!elCalendarPopover.hidden && !elCalendarTriggerWrap.contains(e.target)) {
+      closeCalendarPopover();
+    }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !elCalendarPopover.hidden) {
+      closeCalendarPopover();
+    }
   });
 
   elMainContent.addEventListener("click", (e) => {

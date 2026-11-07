@@ -31,7 +31,37 @@
       <div class="edition-bar" id="editionBar">
         <div class="edition-date-nav">
           <button type="button" id="prevDateBtn" class="date-step-btn" title="이전 날짜 지면">◀ 이전호</button>
-          <strong id="currentEditionLabel" class="current-edition-label">오늘자 지면 로딩 중...</strong>
+          <div class="calendar-trigger-wrap" id="calendarTriggerWrap">
+            <button
+              type="button"
+              id="currentEditionLabel"
+              class="current-edition-btn"
+              aria-expanded="false"
+              aria-controls="calendarPopover"
+              title="클릭하여 연도·월·일 달력에서 날짜 선택"
+            >
+              오늘자 지면 로딩 중...
+            </button>
+            <!-- Interactive Year / Month / Day Newspaper Calendar Popover -->
+            <div id="calendarPopover" class="calendar-popover" hidden role="dialog" aria-label="발행 지면 날짜 선택 달력">
+              <div class="cal-header">
+                <button type="button" id="calPrevMonthBtn" class="date-step-btn" title="이전 달">◀</button>
+                <div class="cal-select-group">
+                  <select id="calYearSelect" class="cal-select" aria-label="연도 선택"></select>
+                  <select id="calMonthSelect" class="cal-select" aria-label="월 선택"></select>
+                </div>
+                <button type="button" id="calNextMonthBtn" class="date-step-btn" title="다음 달">▶</button>
+              </div>
+              <div class="cal-weekdays">
+                <span class="sun">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span class="sat">토</span>
+              </div>
+              <div id="calDaysGrid" class="cal-days-grid"></div>
+              <div class="cal-footer">
+                <button type="button" id="calGoLatestBtn" class="date-step-btn">오늘자 최신 지면으로</button>
+                <button type="button" id="calCloseBtn" class="date-step-btn">닫기 ✕</button>
+              </div>
+            </div>
+          </div>
           <button type="button" id="nextDateBtn" class="date-step-btn" title="다음 날짜 지면">다음호 ▶</button>
           <button type="button" id="todayDateBtn" class="date-step-btn" style="display:none;">오늘자 지면으로</button>
         </div>
