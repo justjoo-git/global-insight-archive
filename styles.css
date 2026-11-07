@@ -36,7 +36,9 @@ body {
   font-size: 1rem;
   line-height: 1.65;
   text-align: start;
+  word-break: keep-all;
   overflow-wrap: break-word;
+  -webkit-text-size-adjust: 100%;
   background-color: var(--paper-bg);
   color: var(--ink-primary);
 }
@@ -484,10 +486,140 @@ mark.kw-hit {
     border-right: none;
     padding-right: 0;
     border-bottom: 1px solid var(--rule-hairline);
-    padding-bottom: 0.5rem;
+    padding-bottom: 0.65rem;
+  }
+  .news-col:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
   }
   .search-row {
     grid-template-columns: 1fr;
+    gap: 0.4rem;
+    padding: 0.85rem 0;
+  }
+  .search-row-meta {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.4rem;
+  }
+}
+
+/* Mobile Smartphone Optimization (YouTube In-App Browser, iOS Safari, Android Chrome) */
+@media (max-width: 40rem) {
+  .newspaper-shell {
+    padding: 0.75rem 0.9rem 3rem;
+  }
+
+  .masthead-top-row {
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .since-label {
+    font-size: 0.8125rem;
+  }
+
+  .action-btn {
+    min-height: 2.35rem;
+    padding: 0.35rem 0.65rem;
+    font-size: 0.8125rem;
+  }
+
+  .masthead-title-block {
+    padding: 0.95rem 0 0.75rem;
+  }
+
+  .masthead-title {
+    font-size: clamp(1.55rem, 6.2vw, 2.1rem);
+  }
+
+  .masthead-since-sub {
+    font-size: 0.8125rem;
+  }
+
+  .edition-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.45rem;
+    padding: 0.55rem 0;
+  }
+
+  .edition-date-nav {
+    justify-content: space-between;
+    width: 100%;
     gap: 0.35rem;
+  }
+
+  .current-edition-label {
+    font-size: 0.875rem;
+    text-align: center;
+    flex: 1;
+  }
+
+  .date-step-btn {
+    min-height: 2.15rem;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.78rem;
+  }
+
+  #editionYoutubeArea .action-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Prevent iOS Safari auto-zoom on input focus (requires >= 16px / 1rem) and enlarge touch targets */
+  .search-drawer {
+    padding: 0.85rem;
+  }
+
+  .search-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .search-input-wrap {
+    grid-column: 1 / -1;
+  }
+
+  .search-input-wrap input,
+  .filter-select {
+    font-size: 1rem;
+    min-height: 2.65rem;
+    width: 100%;
+  }
+
+  #monthSelect {
+    grid-column: 1 / -1;
+  }
+
+  .search-form .action-btn {
+    justify-content: center;
+    min-height: 2.65rem;
+    font-size: 0.9rem;
+    width: 100%;
+  }
+
+  .country-header-line {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+  }
+
+  .wiki-pill {
+    padding: 0.22rem 0.55rem;
+    font-size: 0.78rem;
+  }
+
+  .news-list {
+    padding-left: 1rem;
+  }
+
+  .news-item {
+    font-size: 0.95rem;
+    line-height: 1.65;
+    margin-bottom: 0.55rem;
   }
 }
