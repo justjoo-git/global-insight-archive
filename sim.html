@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GeoSim — 실시간 지정학 시뮬레이션 맵 (Prototype)</title>
+  <link rel="stylesheet" href="sim.css?v=20261113q" />
+</head>
+<body>
+  <div class="sim-shell">
+    <!-- Top Header & Date / Timelapse Controls -->
+    <header class="sim-header">
+      <div class="brand-group">
+        <span class="brand-badge">PROTOTYPE</span>
+        <h1 class="brand-title">GEOSIM <span class="brand-sub">// 지정학 실시간 시뮬레이션 맵</span></h1>
+      </div>
+
+      <div class="tension-widget" title="선택된 날짜의 전체 국가 평균 긴장도 지수">
+        <span class="tension-label">글로벌 긴장도</span>
+        <div class="tension-bar-wrap">
+          <div id="globalTensionBar" class="tension-bar-fill" style="width: 50%"></div>
+        </div>
+        <span id="globalTensionVal" class="tension-val">50</span>
+        <span id="globalTensionBadge" class="tension-badge">경계</span>
+      </div>
+
+      <div class="date-controls">
+        <button id="prevDateBtn" class="ctrl-btn" title="이전 날짜">◀</button>
+        <select id="dateSelect" class="date-select" aria-label="날짜 선택"></select>
+        <button id="nextDateBtn" class="ctrl-btn" title="다음 날짜">▶</button>
+        <button id="timelapseBtn" class="ctrl-btn primary" title="날짜 흐름(타임랩스) 자동 재생">⏱ 타임랩스</button>
+        <a href="index.html" class="ctrl-btn link-btn">아카이브 ↗</a>
+      </div>
+    </header>
+
+    <!-- Filter & Country Selection Bar -->
+    <div class="toolbar">
+      <div class="layer-filters" role="group" aria-label="이벤트 유형 필터">
+        <button class="filter-btn active" data-type="all">전체 보기</button>
+        <button class="filter-btn" data-type="military">🔥 전쟁/군사</button>
+        <button class="filter-btn" data-type="unrest">⚡ 시위/내정</button>
+        <button class="filter-btn" data-type="diplomacy">🤝 외교/교류</button>
+        <button class="filter-btn" data-type="economy">💰 경제/제재</button>
+      </div>
+
+      <div class="selection-bar">
+        <div id="selectedChips" class="selected-chips">
+          <span class="hint-text">국가 클릭: 단독 집중 · 추가 클릭: 다중 선택 · 재클릭: 해제</span>
+        </div>
+        <button id="resetSelectionBtn" class="ctrl-btn small hidden">전체 초기화</button>
+      </div>
+    </div>
+
+    <!-- Main Map Workspace (Left Map + Docked Right Dossier) -->
+    <div class="map-workspace">
+    <main class="map-stage">
+      <!-- Desk Flip Calendar Overlay on Map -->
+      <div id="mapDeskCalendar" class="desk-calendar" aria-label="현재 날짜 달력">
+        <div class="desk-cal-top">
+          <span id="calYearNum" class="desk-cal-year">2026</span>
+          <span id="calWeekday" class="desk-cal-weekday">금요일</span>
+        </div>
+        <div class="desk-cal-cards">
+          <div id="calMonthCard" class="desk-cal-card month-card">
+            <div class="cal-rings" aria-hidden="true"><span></span><span></span></div>
+            <div class="cal-face">
+              <span id="calMonthNum" class="cal-num">11</span><span class="cal-unit">월</span>
+            </div>
+          </div>
+          <div id="calDayCard" class="desk-cal-card day-card">
+            <div class="cal-rings" aria-hidden="true"><span></span><span></span></div>
+            <div class="cal-face">
+              <span id="calDayNum" class="cal-num">13</span><span class="cal-unit">일</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <svg id="worldSvg" viewBox="122 54 795 380" preserveAspectRatio="xMidYMid meet" aria-label="세계 지도">
+        <defs>
+          <filter id="glowRed" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="2.5" result="blur" />
+            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+          <filter id="glowSoft" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="1.8" result="blur" />
+            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+        </defs>
+
+        <!-- Background click catcher for deselecting -->
+        <rect id="mapBg" x="0" y="0" width="1000" height="500" fill="transparent" />
+
+        <!-- Subtle Grid -->
+        <g id="gridLayer" class="grid-layer"></g>
+
+        <!-- World Country Borders -->
+        <g id="countriesMapLayer"></g>
+
+        <!-- Event Arcs & Ripples -->
+        <g id="arcsLayer"></g>
+
+        <!-- 66 Country Pins -->
+        <g id="countriesLayer"></g>
+
+        <!-- Active Moving Icon / Label -->
+        <g id="animLayer"></g>
+      </svg>
+
+      <!-- Map Legend -->
+      <div class="map-legend">
+        <span><i class="dot red"></i>위기/분쟁</span>
+        <span><i class="dot amber"></i>경계/시위</span>
+        <span><i class="dot green"></i>외교/안정</span>
+        <span><i class="dot gray"></i>보도 없음/중립</span>
+      </div>
+
+      <!-- Zoom Controls -->
+      <div class="map-zoom-controls" aria-label="지도 확대 축소">
+        <button id="zoomInBtn" class="zoom-btn" title="지도 확대 (+)">+</button>
+        <button id="zoomOutBtn" class="zoom-btn" title="지도 축소 (-)">−</button>
+        <button id="zoomResetBtn" class="zoom-btn" title="전체 화면으로 초기화">⟲</button>
+      </div>
+
+      <!-- Hover Tooltip -->
+      <div id="mapTooltip" class="map-tooltip hidden"></div>
+
+      <!-- Active Event Popup (anchored below active country) -->
+      <div id="mapEventPopup" class="map-event-popup hidden" aria-live="polite"></div>
+    </main>
+
+      <!-- Docked Right RPG Country Dossier Panel -->
+      <aside id="dossierCard" class="dossier-card hidden" aria-live="polite">
+        <div class="dossier-header">
+          <div class="dossier-title-wrap">
+            <span id="dossierFlag" class="dossier-flag">🌐</span>
+            <div>
+              <h2 id="dossierName" class="dossier-name">-</h2>
+              <p id="dossierMeta" class="dossier-meta">-</p>
+            </div>
+          </div>
+          <button id="closeDossierBtn" class="ctrl-btn small" title="선택 초기화">✕</button>
+        </div>
+
+        <div class="dossier-stats">
+          <div class="stat-row">
+            <span>종합 긴장도</span>
+            <strong id="dossierScore">-</strong>
+          </div>
+          <div class="stat-bar"><div id="dossierScoreBar" class="stat-bar-fill"></div></div>
+          <div id="dossierAxes" class="axis-bars"></div>
+          <div id="dossierTrend" class="trend-box"></div>
+          <div class="stat-pills" id="dossierCounts"></div>
+        </div>
+
+        <div class="dossier-info" id="dossierInfo"></div>
+
+        <div class="dossier-events-head">관련 주요 이벤트 (<span id="dossierEventCount">0</span>)</div>
+        <ul id="dossierEventsList" class="dossier-events-list"></ul>
+      </aside>
+    </div>
+
+    <!-- Bottom Live Event Ticker & Playback Controls -->
+    <footer class="ticker-bar">
+      <div class="ticker-main-row">
+        <div class="ticker-controls">
+          <button id="playEventsBtn" class="ctrl-btn small" title="이벤트 애니메이션 재생/일시정지">⏸</button>
+          <button id="speedBtn" class="ctrl-btn small" title="재생 속도 전환">1x</button>
+        </div>
+
+        <div class="ticker-active" id="tickerActive">
+          <span id="tickerTypeBadge" class="ev-badge">READY</span>
+          <span id="tickerRoute" class="ticker-route">-</span>
+          <span id="tickerHeadline" class="ticker-headline">데이터를 불러오는 중입니다...</span>
+        </div>
+
+        <div class="ticker-queue" id="tickerQueue" title="클릭하여 해당 이벤트 즉시 재생"></div>
+      </div>
+
+      <div class="ticker-marquee-wrap" title="마우스를 올리면 일시정지 · 클릭 시 해당 이벤트 즉시 재생">
+        <span class="marquee-tag">LIVE FEED</span>
+        <div class="ticker-marquee-viewport">
+          <div id="tickerMarqueeTrack" class="ticker-marquee-track"></div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script src="data/world_map_paths.js?v=20261113f"></script>
+  <script src="data/geosim_events.js?v=20261114"></script>
+  <script src="sim.js?v=20261113q"></script>
+</body>
+</html>
+

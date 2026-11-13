@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>글로벌 인사이트 뉴스 아카이브 — 직관직설</title>
+  <link rel="stylesheet" href="styles.css?v=20261107v7">
+  <style>
+    .edition-right-tools {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .geosim-tension-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 12.5px;
+      font-weight: 600;
+      border: 1px solid #d5d0c5;
+      background: #f4f2ed;
+      color: #111111;
+      font-variant-numeric: tabular-nums;
+    }
+    .geosim-tension-pill.lvl-calm { background: rgba(5, 150, 105, 0.1); border-color: rgba(5, 150, 105, 0.35); color: #065f46; }
+    .geosim-tension-pill.lvl-watch { background: rgba(3, 105, 161, 0.1); border-color: rgba(3, 105, 161, 0.35); color: #075985; }
+    .geosim-tension-pill.lvl-tense { background: rgba(217, 119, 6, 0.12); border-color: rgba(217, 119, 6, 0.38); color: #92400e; }
+    .geosim-tension-pill.lvl-crisis { background: rgba(220, 38, 38, 0.1); border-color: rgba(220, 38, 38, 0.38); color: #991b1b; }
+    .geosim-action-btn {
+      background: #111111 !important;
+      color: #fcfbf9 !important;
+      border-color: #111111 !important;
+      font-weight: 600;
+    }
+    .geosim-action-btn:hover {
+      background: #0369a1 !important;
+      border-color: #0369a1 !important;
+    }
+    .country-tension-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: var(--font-sans, sans-serif);
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid #d5d0c5;
+      background: #f4f2ed;
+      color: #111111;
+      vertical-align: middle;
+      font-variant-numeric: tabular-nums;
+    }
+    .country-tension-badge.lvl-red { background: rgba(220, 38, 38, 0.1); border-color: rgba(220, 38, 38, 0.35); color: #991b1b; }
+    .country-tension-badge.lvl-amber { background: rgba(217, 119, 6, 0.12); border-color: rgba(217, 119, 6, 0.38); color: #92400e; }
+    .country-tension-badge.lvl-green { background: rgba(5, 150, 105, 0.1); border-color: rgba(5, 150, 105, 0.35); color: #065f46; }
+    .wiki-pill.geosim-pill {
+      background: #111111;
+      color: #fcfbf9;
+      border-color: #111111;
+      font-weight: 600;
+    }
+    .wiki-pill.geosim-pill:hover {
+      background: #0369a1;
+      border-color: #0369a1;
+    }
+  </style>
+</head>
+<body>
+  <div class="newspaper-shell">
+    <!-- Classic Broadsheet Masthead -->
+    <header class="masthead">
+      <div class="masthead-top-row">
+        <span id="sinceLabel" class="since-label">Since 2025. 10. 15.</span>
+        <div class="masthead-actions">
+          <a href="https://www.youtube.com/@Deep_Insight_Global" target="_blank" rel="noopener noreferrer" class="action-btn">
+            📺 유튜브 채널 ↗
+          </a>
+          <button type="button" id="toggleSearchBtn" class="action-btn action-btn-primary" aria-expanded="false" aria-controls="searchDrawer">
+            🔍 뉴스 검색
+          </button>
+        </div>
+      </div>
+
+      <div class="masthead-title-block">
+        <h1 class="masthead-title" id="homeTitleBtn" title="오늘자 첫 화면으로 이동">
+          <span class="masthead-brand-col brand-accent">
+            <span>글로벌 인사이트</span>
+            <span class="masthead-subtitle">직관직설</span>
+          </span>
+          <span>뉴스 아카이브</span>
+        </h1>
+        <p class="masthead-since-sub" id="mastheadSub">Since October 15, 2025 · Global Daily News Briefing</p>
+      </div>
+
+      <!-- Edition Sub-bar (Shows Today's Edition Date on Front Page, or Search Mode Indicator) -->
+      <div class="edition-bar" id="editionBar">
+        <div class="edition-date-nav">
+          <button type="button" id="prevDateBtn" class="date-step-btn" title="이전 날짜 지면">◀ 이전호</button>
+          <div class="calendar-trigger-wrap" id="calendarTriggerWrap">
+            <button
+              type="button"
+              id="currentEditionLabel"
+              class="current-edition-btn"
+              aria-expanded="false"
+              aria-controls="calendarPopover"
+              title="클릭하여 연도·월·일 달력에서 날짜 선택"
+            >
+              오늘자 지면 로딩 중...
+            </button>
+            <!-- Interactive Year / Month / Day Newspaper Calendar Popover -->
+            <div id="calendarPopover" class="calendar-popover" hidden role="dialog" aria-label="발행 지면 날짜 선택 달력">
+              <div class="cal-header">
+                <button type="button" id="calPrevMonthBtn" class="date-step-btn" title="이전 달">◀</button>
+                <div class="cal-select-group">
+                  <select id="calYearSelect" class="cal-select" aria-label="연도 선택"></select>
+                  <select id="calMonthSelect" class="cal-select" aria-label="월 선택"></select>
+                </div>
+                <button type="button" id="calNextMonthBtn" class="date-step-btn" title="다음 달">▶</button>
+              </div>
+              <div class="cal-weekdays">
+                <span class="sun">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span class="sat">토</span>
+              </div>
+              <div id="calDaysGrid" class="cal-days-grid"></div>
+              <div class="cal-footer">
+                <button type="button" id="calGoLatestBtn" class="date-step-btn">오늘자 최신 지면으로</button>
+                <button type="button" id="calCloseBtn" class="date-step-btn">닫기 ✕</button>
+              </div>
+            </div>
+          </div>
+          <button type="button" id="nextDateBtn" class="date-step-btn" title="다음 날짜 지면">다음호 ▶</button>
+          <button type="button" id="todayDateBtn" class="date-step-btn" style="display:none;">오늘자 지면으로</button>
+        </div>
+        <div id="editionYoutubeArea"></div>
+      </div>
+    </header>
+
+    <!-- Collapsible Search & Filter Panel (Hidden by Default) -->
+    <section id="searchDrawer" class="search-drawer" hidden aria-label="뉴스 검색 및 필터">
+      <form id="searchForm" class="search-form">
+        <div class="search-input-wrap">
+          <input
+            type="search"
+            id="searchInput"
+            placeholder="검색어를 입력하세요 (예: 반도체, 관세, 금리, 원전, 트럼프...)"
+            aria-label="검색어 입력"
+          >
+        </div>
+
+        <select id="countrySelect" class="filter-select" aria-label="국가 선택">
+          <option value="ALL">전체 국가</option>
+        </select>
+
+        <select id="categorySelect" class="filter-select" aria-label="분야 선택">
+          <option value="ALL">전체 분야</option>
+          <option value="POLITICS">정치 · 외교</option>
+          <option value="ECONOMY">경제 · 기술</option>
+          <option value="SOCIETY">문화 · 사회</option>
+        </select>
+
+        <select id="monthSelect" class="filter-select" aria-label="연월 선택">
+          <option value="ALL">전체 기간</option>
+        </select>
+
+        <button type="submit" class="action-btn action-btn-primary">검색 실행</button>
+        <button type="button" id="resetSearchBtn" class="action-btn">오늘자 첫 화면으로</button>
+      </form>
+    </section>
+
+    <!-- Main Content Area (Front Page Today's Edition OR Search Results List) -->
+    <main id="mainContent">
+      <p>데이터를 불러오는 중입니다...</p>
+    </main>
+
+    <!-- Footer & Copyright Disclaimer -->
+    <footer class="newspaper-footer">
+      <div>
+        <strong>글로벌 인사이트 뉴스 아카이브</strong> (<span id="footerSince">Since 2025. 10. 15.</span>) ·
+        본 사이트의 콘텐츠는 공개된 글로벌 시사 사실(Fact)을 바탕으로 AI가 자체 요약·재구성한 참고용 브리핑이며, 특정 언론사의 원문 기사를 전재하지 않습니다.
+      </div>
+      <div>
+        <a href="https://www.youtube.com/@Deep_Insight_Global" target="_blank" rel="noopener noreferrer">YouTube @Deep_Insight_Global ↗</a>
+      </div>
+    </footer>
+  </div>
+
+  <script src="data/archive_data.js?v=202611131643"></script>
+  <script src="data/geosim_summary.js?v=20261113"></script>
+  <script src="app_preview.js?v=20261113"></script>
+</body>
+</html>
