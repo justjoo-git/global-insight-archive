@@ -259,7 +259,30 @@
     elCurrentEditionLabel.setAttribute("aria-expanded", "false");
   }
 
-  function renderCountryBriefBox(countryKey, showHistoryBtn) {
+  function getGeoSimGlobalTension(dateStr) {
+    const gs = window.GEOSIM_SUMMARY;
+    if (!gs || !gs.globalTension) return null;
+    if (typeof gs.globalTension[dateStr] === "number") return gs.globalTension[dateStr];
+    return null;
+  }
+
+  function getGeoSimCountryStatus(dateStr, countryKey) {
+    const gs = window.GEOSIM_SUMMARY;
+    if (!gs || !gs.statusByDate) return null;
+    const targetDate = dateStr || LATEST_DATE;
+    const dayMap = gs.statusByDate[targetDate];
+    if (dayMap && dayMap[countryKey]) return dayMap[countryKey];
+    const dates = gs.dates || [];
+    for (let i = dates.length - 1; i >= 0; i--) {
+      const d = dates[i];
+      if (d <= targetDate && gs.statusByDate[d] && gs.statusByDate[d][countryKey]) {
+        return gs.statusByDate[d][countryKey];
+      }
+    }
+    return null;
+  }
+
+  function renderCountryBriefBox(countryKey, showHistoryBtn, dateStr = state.currentDate) {
     const m = ARCHIVE.countries[countryKey];
     if (!m) return "";
 
@@ -267,16 +290,30 @@
       ? `<button type="button" class="wiki-pill js-country-search" data-country="${countryKey}">이 국가 지난 뉴스 목록 보기 →</button>`
       : "";
 
+    const cSt = getGeoSimCountryStatus(dateStr, countryKey);
+    let tensionBadgeHtml = "";
+    if (cSt) {
+      const daily = typeof cSt.daily === "number" ? cSt.daily : cSt.score;
+      const diff = daily - cSt.score;
+      const arrow = diff >= 4 ? "▲" : diff <= -4 ? "▼" : "▶";
+      const lvlCls = cSt.color ? `lvl-${cSt.color}` : "";
+      tensionBadgeHtml = `<span class="country-tension-badge ${lvlCls}" title="90일 누적 긴장도 ${cSt.score} / 당일 ${daily}">긴장도 ${cSt.score} · 당일 ${daily} ${arrow}</span>`;
+    }
+
+    const simUrl = `sim.html?date=${encodeURIComponent(dateStr || LATEST_DATE)}&country=${encodeURIComponent(countryKey)}`;
+
     return `
       <div class="country-header-line">
         <h2 class="country-title">
           <span>${m.flag} ${escapeHtml(m.ko)}</span>
           <span class="en-label">${escapeHtml(m.en)}</span>
+          ${tensionBadgeHtml}
         </h2>
         <div class="country-meta-links">
           <a href="${escapeHtml(m.wiki_ko)}" target="_blank" rel="noopener noreferrer" class="wiki-pill">📖 한국어 위키백과 ↗</a>
           <a href="${escapeHtml(m.wiki_en)}" target="_blank" rel="noopener noreferrer" class="wiki-pill">🌐 English Wiki ↗</a>
           ${historyBtnHtml}
+          <a href="${simUrl}" target="_blank" rel="noopener noreferrer" class="wiki-pill geosim-pill" title="${escapeHtml(m.ko)} GeoSim 시뮬레이션 열기">🗺️ GeoSim 보기 ↗</a>
         </div>
       </div>
       <div class="country-brief-box">
@@ -302,17 +339,22 @@
     elNextDateBtn.disabled = idx <= 0;
     elTodayDateBtn.style.display = isLatest ? "none" : "inline-block";
 
-    // Broadcast link for this edition date
+    // Broadcast link + Global Tension + GeoSim link for this edition date
     const b = ARCHIVE.broadcasts[dateStr];
-    if (b) {
-      elEditionYoutubeArea.innerHTML = `
-        <a href="${escapeHtml(b.youtube_url)}" target="_blank" rel="noopener noreferrer" class="action-btn" title="${escapeHtml(b.title)}">
-          📺 ${escapeHtml(b.title)} 보러가기 ↗
-        </a>
-      `;
-    } else {
-      elEditionYoutubeArea.innerHTML = "";
+    const gt = getGeoSimGlobalTension(dateStr);
+    let gtHtml = "";
+    if (gt !== null) {
+      let gtLabel = "안정", gtCls = "lvl-calm";
+      if (gt >= 65) { gtLabel = "위기"; gtCls = "lvl-crisis"; }
+      else if (gt >= 52) { gtLabel = "긴장"; gtCls = "lvl-tense"; }
+      else if (gt >= 42) { gtLabel = "경계"; gtCls = "lvl-watch"; }
+      gtHtml = `<span class="geosim-tension-pill ${gtCls}" title="${escapeHtml(dateStr)} 글로벌 평균 긴장도 지수">🌐 글로벌 긴장도 <strong>${gt}</strong> · ${gtLabel}</span>`;
     }
+    const geoSimBtnHtml = `<a href="sim.html?date=${encodeURIComponent(dateStr)}" target="_blank" rel="noopener noreferrer" class="action-btn geosim-action-btn" title="${escapeHtml(dateStr)} GeoSim 전체 지도 열기">🗺️ GeoSim ↗</a>`;
+    const ytBtnHtml = b
+      ? `<a href="${escapeHtml(b.youtube_url)}" target="_blank" rel="noopener noreferrer" class="action-btn" title="${escapeHtml(b.title)}">📺 ${escapeHtml(b.title)} 보러가기 ↗</a>`
+      : "";
+    elEditionYoutubeArea.innerHTML = `<div class="edition-right-tools">${gtHtml}${ytBtnHtml}${geoSimBtnHtml}</div>`;
 
     // Filter records for currentDate
     const dayRecords = ARCHIVE.records.filter((r) => r.d === dateStr);

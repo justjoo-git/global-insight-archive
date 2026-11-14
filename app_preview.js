@@ -310,10 +310,10 @@
           ${tensionBadgeHtml}
         </h2>
         <div class="country-meta-links">
-          <a href="${simUrl}" target="_blank" rel="noopener noreferrer" class="wiki-pill geosim-pill" title="${escapeHtml(m.ko)} GeoSim 시뮬레이션 열기">🗺️ GeoSim 보기 ↗</a>
           <a href="${escapeHtml(m.wiki_ko)}" target="_blank" rel="noopener noreferrer" class="wiki-pill">📖 한국어 위키백과 ↗</a>
           <a href="${escapeHtml(m.wiki_en)}" target="_blank" rel="noopener noreferrer" class="wiki-pill">🌐 English Wiki ↗</a>
           ${historyBtnHtml}
+          <a href="${simUrl}" target="_blank" rel="noopener noreferrer" class="wiki-pill geosim-pill" title="${escapeHtml(m.ko)} GeoSim 시뮬레이션 열기">🗺️ GeoSim 보기 ↗</a>
         </div>
       </div>
       <div class="country-brief-box">
@@ -354,7 +354,7 @@
     const ytBtnHtml = b
       ? `<a href="${escapeHtml(b.youtube_url)}" target="_blank" rel="noopener noreferrer" class="action-btn" title="${escapeHtml(b.title)}">📺 ${escapeHtml(b.title)} 보러가기 ↗</a>`
       : "";
-    elEditionYoutubeArea.innerHTML = `<div class="edition-right-tools">${gtHtml}${geoSimBtnHtml}${ytBtnHtml}</div>`;
+    elEditionYoutubeArea.innerHTML = `<div class="edition-right-tools">${gtHtml}${ytBtnHtml}${geoSimBtnHtml}</div>`;
 
     // Filter records for currentDate
     const dayRecords = ARCHIVE.records.filter((r) => r.d === dateStr);

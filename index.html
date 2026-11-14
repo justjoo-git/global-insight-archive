@@ -8,6 +8,69 @@
   <meta http-equiv="Expires" content="0">
   <title>글로벌 인사이트 뉴스 아카이브 — 직관직설</title>
   <link rel="stylesheet" href="styles.css?v=20261107v7">
+  <style>
+    .edition-right-tools {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .geosim-tension-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 12.5px;
+      font-weight: 600;
+      border: 1px solid #d5d0c5;
+      background: #f4f2ed;
+      color: #111111;
+      font-variant-numeric: tabular-nums;
+    }
+    .geosim-tension-pill.lvl-calm { background: rgba(5, 150, 105, 0.1); border-color: rgba(5, 150, 105, 0.35); color: #065f46; }
+    .geosim-tension-pill.lvl-watch { background: rgba(3, 105, 161, 0.1); border-color: rgba(3, 105, 161, 0.35); color: #075985; }
+    .geosim-tension-pill.lvl-tense { background: rgba(217, 119, 6, 0.12); border-color: rgba(217, 119, 6, 0.38); color: #92400e; }
+    .geosim-tension-pill.lvl-crisis { background: rgba(220, 38, 38, 0.1); border-color: rgba(220, 38, 38, 0.38); color: #991b1b; }
+    .geosim-action-btn {
+      background: #4b5563 !important;
+      color: #fcfbf9 !important;
+      border-color: #374151 !important;
+      font-weight: 600;
+    }
+    .geosim-action-btn:hover {
+      background: #374151 !important;
+      border-color: #1f2937 !important;
+    }
+    .country-tension-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: var(--font-sans, sans-serif);
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid #d5d0c5;
+      background: #f4f2ed;
+      color: #111111;
+      vertical-align: middle;
+      font-variant-numeric: tabular-nums;
+    }
+    .country-tension-badge.lvl-red { background: rgba(220, 38, 38, 0.1); border-color: rgba(220, 38, 38, 0.35); color: #991b1b; }
+    .country-tension-badge.lvl-amber { background: rgba(217, 119, 6, 0.12); border-color: rgba(217, 119, 6, 0.38); color: #92400e; }
+    .country-tension-badge.lvl-green { background: rgba(5, 150, 105, 0.1); border-color: rgba(5, 150, 105, 0.35); color: #065f46; }
+    .wiki-pill.geosim-pill {
+      background: #4b5563;
+      color: #fcfbf9;
+      border-color: #374151;
+      font-weight: 600;
+    }
+    .wiki-pill.geosim-pill:hover {
+      background: #374151;
+      border-color: #1f2937;
+    }
+  </style>
 </head>
 <body>
   <div class="newspaper-shell">
@@ -128,6 +191,7 @@
   </div>
 
   <script src="data/archive_data.js?v=202611140818"></script>
-  <script src="app.js?v=20261107v8"></script>
+  <script src="data/geosim_summary.js?v=20261114s"></script>
+  <script src="app.js?v=20261114s"></script>
 </body>
 </html>

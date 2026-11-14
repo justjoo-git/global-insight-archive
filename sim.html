@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GeoSim — 실시간 지정학 시뮬레이션 맵 (Prototype)</title>
-  <link rel="stylesheet" href="sim.css?v=20261113q" />
+  <link rel="stylesheet" href="sim.css?v=20261114q" />
 </head>
 <body>
   <div class="sim-shell">
@@ -26,7 +26,34 @@
 
       <div class="date-controls">
         <button id="prevDateBtn" class="ctrl-btn" title="이전 날짜">◀</button>
-        <select id="dateSelect" class="date-select" aria-label="날짜 선택"></select>
+        <div class="calendar-trigger-wrap" id="calendarTriggerWrap">
+          <button
+            type="button"
+            id="currentDateBtn"
+            class="ctrl-btn date-cal-btn"
+            aria-expanded="false"
+            aria-controls="calendarPopover"
+            title="클릭하여 달력에서 날짜 선택"
+          >📅 2026-11-14</button>
+          <div id="calendarPopover" class="calendar-popover" hidden role="dialog" aria-label="지오심 날짜 선택 달력">
+            <div class="cal-header">
+              <button type="button" id="calPrevMonthBtn" class="cal-step-btn" title="이전 달">◀</button>
+              <div class="cal-select-group">
+                <select id="calYearSelect" class="cal-select" aria-label="연도 선택"></select>
+                <select id="calMonthSelect" class="cal-select" aria-label="월 선택"></select>
+              </div>
+              <button type="button" id="calNextMonthBtn" class="cal-step-btn" title="다음 달">▶</button>
+            </div>
+            <div class="cal-weekdays">
+              <span class="sun">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span class="sat">토</span>
+            </div>
+            <div id="calDaysGrid" class="cal-days-grid"></div>
+            <div class="cal-footer">
+              <button type="button" id="calGoLatestBtn" class="cal-step-btn">최신 날짜로</button>
+              <button type="button" id="calCloseBtn" class="cal-step-btn">닫기 ✕</button>
+            </div>
+          </div>
+        </div>
         <button id="nextDateBtn" class="ctrl-btn" title="다음 날짜">▶</button>
         <button id="timelapseBtn" class="ctrl-btn primary" title="날짜 흐름(타임랩스) 자동 재생">⏱ 타임랩스</button>
         <a href="index.html" class="ctrl-btn link-btn">아카이브 ↗</a>
@@ -35,19 +62,27 @@
 
     <!-- Filter & Country Selection Bar -->
     <div class="toolbar">
-      <div class="layer-filters" role="group" aria-label="이벤트 유형 필터">
-        <button class="filter-btn active" data-type="all">전체 보기</button>
-        <button class="filter-btn" data-type="military">🔥 전쟁/군사</button>
-        <button class="filter-btn" data-type="unrest">⚡ 시위/내정</button>
-        <button class="filter-btn" data-type="diplomacy">🤝 외교/교류</button>
-        <button class="filter-btn" data-type="economy">💰 경제/제재</button>
+      <div class="toolbar-left">
+        <div class="window-filters" role="group" aria-label="조회 기간 선택">
+          <button class="win-btn" data-days="1">1일</button>
+          <button class="win-btn active" data-days="7">7일</button>
+          <button class="win-btn" data-days="30">30일</button>
+        </div>
+        <div class="layer-filters" role="group" aria-label="테마 필터">
+          <button class="filter-btn active" data-theme="all">전체</button>
+          <button class="filter-btn theme-neg" data-theme="war"><svg viewBox="-9 -9 18 18" width="13" height="13" style="vertical-align:-2px;margin-right:2px" aria-hidden="true"><g transform="rotate(-42)"><path d="M-7.5,-0.9 L5.5,-0.9 L5.5,0.5 L-1.8,0.5 L-3.6,2.1 L-7.8,2.1 L-7.2,0.5 L-7.5,0.5 Z" fill="#b91c1c"/><rect x="1.2" y="-1.6" width="5.8" height="0.8" rx="0.3" fill="#7f1d1d"/><rect x="-0.6" y="0.4" width="1.1" height="2.0" rx="0.2" fill="#7f1d1d"/></g><g transform="scale(-1,1) rotate(-42)"><path d="M-7.5,-0.9 L5.5,-0.9 L5.5,0.5 L-1.8,0.5 L-3.6,2.1 L-7.8,2.1 L-7.2,0.5 L-7.5,0.5 Z" fill="#b91c1c"/><rect x="1.2" y="-1.6" width="5.8" height="0.8" rx="0.3" fill="#7f1d1d"/><rect x="-0.6" y="0.4" width="1.1" height="2.0" rx="0.2" fill="#7f1d1d"/></g></svg>전쟁·충돌</button>
+          <button class="filter-btn theme-neg" data-theme="unrest">🔥 시위·불안</button>
+          <button class="filter-btn theme-pos" data-theme="friendly">🤝 우호·협력</button>
+          <button class="filter-btn theme-neg" data-theme="diplo_neg">😠 외교 갈등</button>
+          <button class="filter-btn theme-neg" data-theme="eco_neg">📉 경제 위기</button>
+          <button id="resetSelectionBtn" class="ctrl-btn reset-big-btn" title="선택 국가·필터·지도 확대 초기화">⟲ 리셋</button>
+        </div>
       </div>
 
       <div class="selection-bar">
         <div id="selectedChips" class="selected-chips">
           <span class="hint-text">국가 클릭: 단독 집중 · 추가 클릭: 다중 선택 · 재클릭: 해제</span>
         </div>
-        <button id="resetSelectionBtn" class="ctrl-btn small hidden">전체 초기화</button>
       </div>
     </div>
 
@@ -55,7 +90,7 @@
     <div class="map-workspace">
     <main class="map-stage">
       <!-- Desk Flip Calendar Overlay on Map -->
-      <div id="mapDeskCalendar" class="desk-calendar" aria-label="현재 날짜 달력">
+      <div id="mapDeskCalendar" class="desk-calendar" title="클릭하여 달력에서 날짜 선택" aria-label="현재 날짜 달력">
         <div class="desk-cal-top">
           <span id="calYearNum" class="desk-cal-year">2026</span>
           <span id="calWeekday" class="desk-cal-weekday">금요일</span>
@@ -164,31 +199,24 @@
     <footer class="ticker-bar">
       <div class="ticker-main-row">
         <div class="ticker-controls">
-          <button id="playEventsBtn" class="ctrl-btn small" title="이벤트 애니메이션 재생/일시정지">⏸</button>
-          <button id="speedBtn" class="ctrl-btn small" title="재생 속도 전환">1x</button>
+          <button id="playEventsBtn" class="ctrl-btn play-main-btn" title="이벤트 시뮬레이션 재생/일시정지">▶</button>
+          <button id="speedBtn" class="ctrl-btn small" title="재생 속도 전환 (0.5x / 1x / 2x)">1x</button>
         </div>
 
         <div class="ticker-active" id="tickerActive">
           <span id="tickerTypeBadge" class="ev-badge">READY</span>
           <span id="tickerRoute" class="ticker-route">-</span>
-          <span id="tickerHeadline" class="ticker-headline">데이터를 불러오는 중입니다...</span>
+          <span id="tickerHeadline" class="ticker-headline">국가를 클릭해 상세 정보를 확인하거나 ▶ 버튼을 눌러 시뮬레이션을 시작하세요.</span>
         </div>
 
         <div class="ticker-queue" id="tickerQueue" title="클릭하여 해당 이벤트 즉시 재생"></div>
-      </div>
-
-      <div class="ticker-marquee-wrap" title="마우스를 올리면 일시정지 · 클릭 시 해당 이벤트 즉시 재생">
-        <span class="marquee-tag">LIVE FEED</span>
-        <div class="ticker-marquee-viewport">
-          <div id="tickerMarqueeTrack" class="ticker-marquee-track"></div>
-        </div>
       </div>
     </footer>
   </div>
 
   <script src="data/world_map_paths.js?v=20261113f"></script>
-  <script src="data/geosim_events.js?v=20261114"></script>
-  <script src="sim.js?v=20261113q"></script>
+  <script src="data/geosim_events.js?v=20261114l"></script>
+  <script src="sim.js?v=20261114q"></script>
 </body>
 </html>
 

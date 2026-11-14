@@ -12,29 +12,17 @@
   const WIDTH = 1000.0, HEIGHT = 500.0;
 
   const TYPE_META = {
-    military: { label: "전쟁/군사", icon: "⚔️", color: "#dc2626" },
+    military: { label: "전쟁/안보", icon: "⚔️", color: "#dc2626" },
     unrest: { label: "시위/내정", icon: "🔥", color: "#d97706" },
-    diplomacy: { label: "외교/교류", icon: "✈️", color: "#059669" },
-    economy: { label: "경제/제재", icon: "💵", color: "#2563eb" },
+    diplomacy: { label: "외교/관계", icon: "🤝", color: "#059669" },
+    economy: { label: "경제/제재", icon: "💰", color: "#2563eb" },
   };
 
   const SUBTYPE_META = {
-    missile: { label: "미사일·드론", icon: "🚀" },
-    naval: { label: "함대·항모·해상", icon: "⚓" },
-    airstrike: { label: "공습·전투기", icon: "💣" },
-    ground: { label: "교전·병력파견", icon: "🔫" },
-    ceasefire: { label: "휴전·종전", icon: "🕊️" },
-    summit: { label: "정상방문·회담", icon: "✈️" },
-    envoy: { label: "특사·고위회담", icon: "🤝" },
-    deal_ok: { label: "협상타결·협정", icon: "📜" },
-    deal_fail: { label: "협상결렬·중단", icon: "❌" },
-    criticism: { label: "외교비난·경고", icon: "📢" },
-    protest: { label: "시위·총파업", icon: "🔥" },
-    election: { label: "선거·정변", icon: "🗳️" },
-    crisis: { label: "사회·치안위기", icon: "⚠️" },
-    sanction: { label: "경제제재·관세", icon: "🛡️" },
-    aid_tech: { label: "투자·원조·기술", icon: "💰" },
-    macro: { label: "거시·시장동향", icon: "📈" },
+    military: TYPE_META.military,
+    unrest: TYPE_META.unrest,
+    diplomacy: TYPE_META.diplomacy,
+    economy: TYPE_META.economy,
   };
 
   const STATUS_COLOR = {
@@ -44,13 +32,75 @@
     gray: "#64748b",
   };
 
+  const POLARITY_ICONS = {
+    military: { pos: "🕊️", neg: "⚔️", neu: "🛡️" },
+    unrest: { pos: "🌿", neg: "🔥", neu: "📢" },
+    diplomacy: { pos: "🤝", neg: "😠", neu: "🌐" },
+    economy: { pos: "📈", neg: "📉", neu: "💰" },
+  };
+
+  function getPolarityStyle(ev) {
+    const t = Number(ev.tension || 0);
+    const icons = POLARITY_ICONS[ev.type] || POLARITY_ICONS.diplomacy;
+    if (t < 0) {
+      return { color: "#10b981", bg: "#ecfdf5", icon: icons.pos, sign: "pos", isCrossedRifles: false };
+    }
+    if (t > 0) {
+      return {
+        color: "#ef4444",
+        bg: "#fef2f2",
+        icon: icons.neg,
+        sign: "neg",
+        isCrossedRifles: ev.type === "military",
+      };
+    }
+    return { color: "#64748b", bg: "#f8fafc", icon: icons.neu, sign: "neu", isCrossedRifles: false };
+  }
+
+  const CROSSED_RIFLES_MARKUP =
+    `<g transform="rotate(-42)">` +
+      `<path d="M-7.5,-0.9 L5.5,-0.9 L5.5,0.5 L-1.8,0.5 L-3.6,2.1 L-7.8,2.1 L-7.2,0.5 L-7.5,0.5 Z" fill="#b91c1c"/>` +
+      `<rect x="1.2" y="-1.6" width="5.8" height="0.8" rx="0.3" fill="#7f1d1d"/>` +
+      `<rect x="-0.6" y="0.4" width="1.1" height="2.0" rx="0.2" fill="#7f1d1d"/>` +
+    `</g>` +
+    `<g transform="scale(-1,1) rotate(-42)">` +
+      `<path d="M-7.5,-0.9 L5.5,-0.9 L5.5,0.5 L-1.8,0.5 L-3.6,2.1 L-7.8,2.1 L-7.2,0.5 L-7.5,0.5 Z" fill="#b91c1c"/>` +
+      `<rect x="1.2" y="-1.6" width="5.8" height="0.8" rx="0.3" fill="#7f1d1d"/>` +
+      `<rect x="-0.6" y="0.4" width="1.1" height="2.0" rx="0.2" fill="#7f1d1d"/>` +
+    `</g>`;
+
+  function appendSvgBadgeIcon(vg, pStyle) {
+    if (pStyle.isCrossedRifles) {
+      const ig = svgEl("g", {});
+      ig.innerHTML = CROSSED_RIFLES_MARKUP;
+      vg.appendChild(ig);
+      return;
+    }
+    const iconText = svgEl("text", {
+      x: 0, y: 0.5,
+      "text-anchor": "middle",
+      "dominant-baseline": "central",
+      "font-size": "13",
+    });
+    iconText.textContent = pStyle.icon;
+    vg.appendChild(iconText);
+  }
+
+  function polarityIconHtml(pStyle) {
+    if (pStyle.isCrossedRifles) {
+      return `<svg viewBox="-9 -9 18 18" width="14" height="14" style="vertical-align:-2px;display:inline-block" aria-hidden="true">${CROSSED_RIFLES_MARKUP}</svg>`;
+    }
+    return pStyle.icon;
+  }
+
   const state = {
     dates: DATA.dates || [],
     currentDate: (DATA.dates && DATA.dates[DATA.dates.length - 1]) || "",
-    activeType: "all",
+    activeTheme: "all",
+    windowDays: 7,
     selectedCountries: new Set(),
     lastFocusedCountry: null,
-    isPlayingEvents: true,
+    isPlayingEvents: false,
     isTimelapse: false,
     speed: 1,
     activeEventIdx: 0,
@@ -64,25 +114,34 @@
     vh: 380,
     panFrameId: null,
     didDrag: false,
-    marqueeOffset: 0,
-    marqueePassWidth: 0,
-    marqueeRanges: [],
-    marqueeHovered: false,
-    marqueeLastTs: 0,
-    marqueeRafId: null,
     popupAnchorMeta: null,
     popupOffset: { dx: 0, dy: 0 },
+    calYear: Number(((DATA.dates && DATA.dates[DATA.dates.length - 1]) || "2026-11-14").slice(0, 4)),
+    calMonth: Number(((DATA.dates && DATA.dates[DATA.dates.length - 1]) || "2026-11-14").slice(5, 7)),
   };
+
+  const ALL_DATES_SET = new Set(state.dates);
+  const LATEST_DATE = state.dates[state.dates.length - 1] || "";
 
   // DOM Elements
   const els = {
+    mapDeskCalendar: document.getElementById("mapDeskCalendar"),
     calYearNum: document.getElementById("calYearNum"),
     calWeekday: document.getElementById("calWeekday"),
     calMonthCard: document.getElementById("calMonthCard"),
     calMonthNum: document.getElementById("calMonthNum"),
     calDayCard: document.getElementById("calDayCard"),
     calDayNum: document.getElementById("calDayNum"),
-    dateSelect: document.getElementById("dateSelect"),
+    calendarTriggerWrap: document.getElementById("calendarTriggerWrap"),
+    currentDateBtn: document.getElementById("currentDateBtn"),
+    calendarPopover: document.getElementById("calendarPopover"),
+    calPrevMonthBtn: document.getElementById("calPrevMonthBtn"),
+    calNextMonthBtn: document.getElementById("calNextMonthBtn"),
+    calYearSelect: document.getElementById("calYearSelect"),
+    calMonthSelect: document.getElementById("calMonthSelect"),
+    calDaysGrid: document.getElementById("calDaysGrid"),
+    calGoLatestBtn: document.getElementById("calGoLatestBtn"),
+    calCloseBtn: document.getElementById("calCloseBtn"),
     prevDateBtn: document.getElementById("prevDateBtn"),
     nextDateBtn: document.getElementById("nextDateBtn"),
     timelapseBtn: document.getElementById("timelapseBtn"),
@@ -119,7 +178,6 @@
     tickerRoute: document.getElementById("tickerRoute"),
     tickerHeadline: document.getElementById("tickerHeadline"),
     tickerQueue: document.getElementById("tickerQueue"),
-    tickerMarqueeTrack: document.getElementById("tickerMarqueeTrack"),
     zoomInBtn: document.getElementById("zoomInBtn"),
     zoomOutBtn: document.getElementById("zoomOutBtn"),
     zoomResetBtn: document.getElementById("zoomResetBtn"),
@@ -136,6 +194,16 @@
       "viewBox",
       `${state.vx.toFixed(1)} ${state.vy.toFixed(1)} ${state.vw.toFixed(1)} ${state.vh.toFixed(1)}`
     );
+    const zoomScale = +(state.vw / 795).toFixed(4);
+    if (els.countriesLayer) {
+      els.countriesLayer.querySelectorAll(".country-node").forEach((node) => {
+        const nx = node.getAttribute("data-x");
+        const ny = node.getAttribute("data-y");
+        if (nx !== null && ny !== null) {
+          node.setAttribute("transform", `translate(${nx}, ${ny}) scale(${zoomScale})`);
+        }
+      });
+    }
     positionMapEventPopup(true);
   }
 
@@ -221,31 +289,113 @@
   }
 
   function initDateSelect() {
-    const frag = document.createDocumentFragment();
-    for (let i = state.dates.length - 1; i >= 0; i--) {
-      const d = state.dates[i];
+    if (!els.calYearSelect || !els.calMonthSelect) return;
+    const years = Array.from(new Set(state.dates.map((d) => Number(d.slice(0, 4))))).sort((a, b) => a - b);
+    els.calYearSelect.innerHTML = "";
+    years.forEach((y) => {
       const opt = document.createElement("option");
-      opt.value = d;
-      opt.textContent = d;
-      frag.appendChild(opt);
+      opt.value = String(y);
+      opt.textContent = `${y}년`;
+      els.calYearSelect.appendChild(opt);
+    });
+    els.calMonthSelect.innerHTML = "";
+    for (let m = 1; m <= 12; m++) {
+      const opt = document.createElement("option");
+      opt.value = String(m);
+      opt.textContent = `${m}월`;
+      els.calMonthSelect.appendChild(opt);
     }
-    els.dateSelect.appendChild(frag);
-    els.dateSelect.value = state.currentDate;
+  }
+
+  function renderCalendarGrid() {
+    if (!els.calDaysGrid) return;
+    const yr = state.calYear;
+    const mo = state.calMonth;
+    els.calYearSelect.value = String(yr);
+    els.calMonthSelect.value = String(mo);
+
+    const firstDayOfWeek = new Date(yr, mo - 1, 1).getDay();
+    const daysInMonth = new Date(yr, mo, 0).getDate();
+    const ymPrefix = `${yr}-${String(mo).padStart(2, "0")}`;
+
+    const cells = [];
+    for (let i = 0; i < firstDayOfWeek; i++) {
+      cells.push(`<div class="cal-day-cell cal-day-empty"></div>`);
+    }
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dStr = `${ymPrefix}-${String(d).padStart(2, "0")}`;
+      const isAvail = ALL_DATES_SET.has(dStr);
+      const isSel = dStr === state.currentDate;
+      if (isAvail) {
+        const selClass = isSel ? " cal-day-selected" : "";
+        cells.push(
+          `<button type="button" class="cal-day-cell cal-day-available${selClass}" data-date="${dStr}" title="${dStr} 보기">${d}</button>`
+        );
+      } else {
+        cells.push(
+          `<button type="button" class="cal-day-cell cal-day-disabled" disabled title="수집된 데이터 없음">${d}</button>`
+        );
+      }
+    }
+    els.calDaysGrid.innerHTML = cells.join("");
+  }
+
+  function openCalendarPopover() {
+    if (!els.calendarPopover) return;
+    const parts = (state.currentDate || LATEST_DATE).split("-");
+    if (parts.length === 3) {
+      state.calYear = Number(parts[0]);
+      state.calMonth = Number(parts[1]);
+    }
+    renderCalendarGrid();
+    els.calendarPopover.hidden = false;
+    if (els.currentDateBtn) els.currentDateBtn.setAttribute("aria-expanded", "true");
+  }
+
+  function closeCalendarPopover() {
+    if (!els.calendarPopover) return;
+    els.calendarPopover.hidden = true;
+    if (els.currentDateBtn) els.currentDateBtn.setAttribute("aria-expanded", "false");
+  }
+
+  function matchesTheme(ev, theme) {
+    if (!theme || theme === "all") return true;
+    const t = Number(ev.tension || 0);
+    if (theme === "war") return ev.type === "military" && t > 0;
+    if (theme === "unrest") return ev.type === "unrest" && t >= 0;
+    if (theme === "friendly") return (ev.type === "diplomacy" || ev.type === "military") && t < 0;
+    if (theme === "diplo_neg") return ev.type === "diplomacy" && t > 0;
+    if (theme === "eco_neg") return ev.type === "economy" && t > 0;
+    return true;
+  }
+
+  function getWindowDates() {
+    const idx = state.dates.indexOf(state.currentDate);
+    if (idx < 0) return state.currentDate ? [state.currentDate] : [];
+    const days = Math.max(1, Number(state.windowDays || 1));
+    const startIdx = Math.max(0, idx - days + 1);
+    return state.dates.slice(startIdx, idx + 1);
   }
 
   function getFilteredEvents() {
-    const raw = DATA.eventsByDate[state.currentDate] || [];
-    return raw.filter((ev) => {
-      if (state.activeType !== "all" && ev.type !== state.activeType) return false;
-      if (state.selectedCountries.size > 0) {
-        const hitFrom =
-          state.selectedCountries.has(ev.from) ||
-          (ev.fromList && ev.fromList.some((k) => state.selectedCountries.has(k)));
-        const hitTo = ev.to && state.selectedCountries.has(ev.to);
-        if (!hitFrom && !hitTo) return false;
+    const winDates = getWindowDates();
+    const out = [];
+    for (let i = winDates.length - 1; i >= 0; i--) {
+      const dStr = winDates[i];
+      const raw = DATA.eventsByDate[dStr] || [];
+      for (const ev of raw) {
+        if (!matchesTheme(ev, state.activeTheme)) continue;
+        if (state.selectedCountries.size > 0) {
+          const hitFrom =
+            state.selectedCountries.has(ev.from) ||
+            (ev.fromList && ev.fromList.some((k) => state.selectedCountries.has(k)));
+          const hitTo = ev.to && state.selectedCountries.has(ev.to);
+          if (!hitFrom && !hitTo) continue;
+        }
+        out.push({ ...ev, _date: dStr });
       }
-      return true;
-    });
+    }
+    return out;
   }
 
   function toggleCountry(cKey) {
@@ -281,7 +431,11 @@
   }
 
   function renderHeader() {
-    els.dateSelect.value = state.currentDate;
+    if (els.currentDateBtn && state.currentDate) {
+      const [cy, cm, cd] = state.currentDate.split("-");
+      const wk = ["일", "월", "화", "수", "목", "금", "토"][new Date(Number(cy), Number(cm) - 1, Number(cd)).getDay()];
+      els.currentDateBtn.textContent = `📅 ${state.currentDate} (${wk})`;
+    }
     if (state.currentDate && els.calYearNum && els.calMonthNum && els.calDayNum && els.calWeekday) {
       const [yr, mo, dy] = state.currentDate.split("-");
       const prevMo = els.calMonthNum.textContent;
@@ -327,10 +481,8 @@
       hint.className = "hint-text";
       hint.textContent = "국가 클릭: 단독 집중 · 재클릭 또는 배경 클릭: 전체 보기";
       els.selectedChips.appendChild(hint);
-      els.resetSelectionBtn.classList.add("hidden");
       return;
     }
-    els.resetSelectionBtn.classList.remove("hidden");
     for (const cKey of state.selectedCountries) {
       const meta = DATA.countries[cKey];
       if (!meta) continue;
@@ -347,28 +499,61 @@
     els.countriesLayer.innerHTML = "";
     const statusMap = DATA.statusByDate[state.currentDate] || {};
     const hasSel = state.selectedCountries.size > 0;
+    const hasTheme = state.activeTheme !== "all";
+    const hasFocus = hasSel || hasTheme;
 
-    // Determine countries connected to selected countries via filtered events
+    // Determine countries connected to selected countries and aggregate bilateral tension
     const connectedSet = new Set(state.selectedCountries);
+    const partnerTensionSum = new Map();
     if (hasSel) {
+      const addPartnerScore = (pKey, tVal) => {
+        if (!pKey || state.selectedCountries.has(pKey)) return;
+        connectedSet.add(pKey);
+        partnerTensionSum.set(pKey, (partnerTensionSum.get(pKey) || 0) + tVal);
+      };
       for (const ev of state.filteredEvents) {
+        const tVal = Number(ev.tension || 0);
         const hitFrom =
           state.selectedCountries.has(ev.from) ||
           (ev.fromList && ev.fromList.some((k) => state.selectedCountries.has(k)));
-        if (hitFrom && ev.to) connectedSet.add(ev.to);
+        if (hitFrom && ev.to) addPartnerScore(ev.to, tVal);
         if (ev.to && state.selectedCountries.has(ev.to)) {
-          connectedSet.add(ev.from);
-          if (ev.fromList) ev.fromList.forEach((k) => connectedSet.add(k));
+          addPartnerScore(ev.from, tVal);
+          if (ev.fromList) ev.fromList.forEach((k) => addPartnerScore(k, tVal));
         }
       }
     }
 
+    const getDisplayColor = (cKey, st) => {
+      if (hasSel && !state.selectedCountries.has(cKey) && partnerTensionSum.has(cKey)) {
+        const net = partnerTensionSum.get(cKey);
+        if (net > 0) return "red";
+        if (net < 0) return "green";
+        return "amber";
+      }
+      return st ? st.color : "gray";
+    };
+
+    const activeInEvents = new Set();
+    for (const ev of state.filteredEvents) {
+      if (ev.from) activeInEvents.add(ev.from);
+      if (ev.to) activeInEvents.add(ev.to);
+      if (ev.fromList) ev.fromList.forEach((k) => activeInEvents.add(k));
+    }
+    if (state.activeTheme === "eco_neg") {
+      for (const [cKey, st] of Object.entries(statusMap)) {
+        if ((st.eco || 0) >= 55) activeInEvents.add(cKey);
+      }
+    }
+
+    const focusSet = hasSel ? connectedSet : activeInEvents;
+
     // Update country border polygon highlights
     for (const [cKey, polys] of countryPolyMap.entries()) {
       const st = statusMap[cKey];
-      const colorName = st ? st.color : "gray";
+      const colorName = getDisplayColor(cKey, st);
       const isSelected = state.selectedCountries.has(cKey);
-      const isDimmed = hasSel && !connectedSet.has(cKey);
+      const isDimmed = hasFocus && !focusSet.has(cKey);
       for (const poly of polys) {
         poly.setAttribute(
           "class",
@@ -382,13 +567,8 @@
       "india", "australia", "canada", "brazil", "italy", "spain", "ukraine",
       "israel", "iran", "saudi-arabia", "turkey", "indonesia", "vietnam", "mexico",
     ]);
-    const activeInEvents = new Set();
-    for (const ev of state.filteredEvents) {
-      if (ev.from) activeInEvents.add(ev.from);
-      if (ev.to) activeInEvents.add(ev.to);
-      if (ev.fromList) ev.fromList.forEach((k) => activeInEvents.add(k));
-    }
 
+    const zoomScale = +(state.vw / 795).toFixed(4);
     const frag = document.createDocumentFragment();
     for (const [cKey, meta] of Object.entries(DATA.countries)) {
       const st = statusMap[cKey];
@@ -399,25 +579,34 @@
       }
 
       const { x, y } = project(meta.lat, meta.lon);
-      const colorName = st ? st.color : "gray";
+      const colorName = getDisplayColor(cKey, st);
       const fill = STATUS_COLOR[colorName] || STATUS_COLOR.gray;
-      const isDimmed = hasSel && !connectedSet.has(cKey);
+      const isDimmed = hasFocus && !focusSet.has(cKey);
 
       const g = svgEl("g", {
         class: `country-node${isSelected ? " selected" : ""}${isDimmed ? " dimmed" : ""}`,
         "data-country": cKey,
+        "data-x": x.toFixed(2),
+        "data-y": y.toFixed(2),
+        transform: `translate(${x.toFixed(2)}, ${y.toFixed(2)}) scale(${zoomScale})`,
       });
 
-      if ((colorName === "red" || isSelected) && !isDimmed) {
+      const showRing = isSelected || (hasTheme && !isDimmed) || (!hasFocus && colorName === "red");
+      if (showRing) {
+        const ringColor = isSelected
+          ? "#0284c7"
+          : hasTheme
+            ? (state.activeTheme === "friendly" ? "#10b981" : "#ef4444")
+            : fill;
         g.appendChild(svgEl("circle", {
-          cx: x, cy: y, r: isSelected ? 7 : 5,
-          stroke: isSelected ? "#0284c7" : fill,
+          cx: 0, cy: 0, r: isSelected ? 7.5 : 6,
+          stroke: ringColor,
           class: "pulse-ring",
         }));
       }
 
       const core = svgEl("circle", {
-        cx: x, cy: y,
+        cx: 0, cy: 0,
         r: isSelected ? 6 : (st ? 4.4 : 3.2),
         fill: isSelected ? "#0284c7" : fill,
         stroke: isSelected ? "#ffffff" : "#fcfbf9",
@@ -429,7 +618,7 @@
       }
       g.appendChild(core);
 
-      const label = svgEl("text", { x, y: y - 7.5, class: "country-label" });
+      const label = svgEl("text", { x: 0, y: -7.5, class: "country-label" });
       label.textContent = meta.ko;
       g.appendChild(label);
 
@@ -562,31 +751,58 @@
     if (!fromMeta) return "-";
     if (ev.fromList && ev.fromList.length > 1 && toMeta) {
       const grp = ev.groupLabel || `${fromMeta.flag} ${fromMeta.ko} 외 ${ev.fromList.length - 1}개국`;
-      return compact ? `${grp}→${toMeta.ko}` : `${grp} → ${toMeta.flag} ${toMeta.ko}`;
+      return compact ? `${grp}↔${toMeta.ko}` : `${grp} ↔ ${toMeta.flag} ${toMeta.ko}`;
     }
     if (toMeta) {
-      return compact ? `${fromMeta.ko}→${toMeta.ko}` : `${fromMeta.flag} ${fromMeta.ko} → ${toMeta.flag} ${toMeta.ko}`;
+      return compact ? `${fromMeta.ko}↔${toMeta.ko}` : `${fromMeta.flag} ${fromMeta.ko} ↔ ${toMeta.flag} ${toMeta.ko}`;
     }
     return compact ? fromMeta.ko : `${fromMeta.flag} ${fromMeta.ko} (국내)`;
   }
 
-  function renderBackgroundArcs() {
+  function renderBackgroundArcs(showActive = state.isPlayingEvents) {
     els.arcsLayer.innerHTML = "";
     const frag = document.createDocumentFragment();
+    const hasTheme = state.activeTheme !== "all";
+    const aggMap = new Map();
+
     state.filteredEvents.forEach((ev, idx) => {
       if (!ev.to || !DATA.countries[ev.to]) return;
-      const isActive = idx === state.activeEventIdx;
+      const isActive = showActive && idx === state.activeEventIdx;
+      const pStyle = getPolarityStyle(ev);
       const sources = ev.fromList && ev.fromList.length > 1 ? ev.fromList : [ev.from];
       sources.forEach((fKey) => {
-        const arc = makeArcPath(fKey, ev.to);
-        if (!arc) return;
-        const path = svgEl("path", {
-          d: arc.d,
-          class: `event-arc ${ev.type} ${isActive ? "active" : "bg"}`,
-        });
-        frag.appendChild(path);
+        if (isActive) {
+          const arc = makeArcPath(fKey, ev.to);
+          if (!arc) return;
+          frag.appendChild(svgEl("path", {
+            d: arc.d,
+            class: `event-arc ${ev.type} active`,
+            style: `stroke:${pStyle.color};`,
+          }));
+          return;
+        }
+        const pair = [fKey, ev.to].sort().join("|");
+        const key = `${pair}|${pStyle.sign}`;
+        const prev = aggMap.get(key);
+        if (prev) {
+          prev.count += 1;
+        } else {
+          aggMap.set(key, { from: fKey, to: ev.to, ev, pStyle, count: 1 });
+        }
       });
     });
+
+    for (const item of aggMap.values()) {
+      const arc = makeArcPath(item.from, item.to);
+      if (!arc) continue;
+      const sw = Math.min(3.6, 1.2 + Math.log2(item.count) * 0.65).toFixed(2);
+      const op = hasTheme ? Math.min(0.88, 0.48 + Math.log2(item.count) * 0.12).toFixed(2) : "0.35";
+      frag.appendChild(svgEl("path", {
+        d: arc.d,
+        class: `event-arc ${item.ev.type} bg`,
+        style: `stroke:${item.pStyle.color};stroke-width:${sw}px;stroke-opacity:${op};`,
+      }));
+    }
     els.arcsLayer.appendChild(frag);
   }
 
@@ -630,12 +846,13 @@
     state.popupAnchorMeta = anchorMeta;
 
     const sMeta = SUBTYPE_META[ev.sub] || tMeta;
+    const pStyle = getPolarityStyle(ev);
     const routeText = formatEventRoute(ev, false);
 
     els.mapEventPopup.className = `map-event-popup ${ev.type}`;
     els.mapEventPopup.innerHTML = `
       <div class="mep-meta-row">
-        <span class="mep-badge ${ev.type}">${sMeta.icon} ${sMeta.label}</span>
+        <span class="mep-badge ${ev.type}" style="color:${pStyle.color};background:${pStyle.bg};border:1px solid ${pStyle.color}33">${polarityIconHtml(pStyle)} ${sMeta.label}</span>
         <span class="mep-date">${state.currentDate}</span>
       </div>
       <div class="mep-head">
@@ -699,181 +916,40 @@
     const ev = events[state.activeEventIdx];
     const tMeta = TYPE_META[ev.type] || TYPE_META.diplomacy;
     const sMeta = SUBTYPE_META[ev.sub] || tMeta;
+    const pStyle = getPolarityStyle(ev);
     const fromMeta = DATA.countries[ev.from];
     const toMeta = ev.to ? DATA.countries[ev.to] : null;
 
     // Update ticker UI
     els.tickerTypeBadge.className = `ev-badge ${ev.type}`;
-    els.tickerTypeBadge.textContent = `${sMeta.icon} ${sMeta.label}`;
+    els.tickerTypeBadge.style.color = pStyle.color;
+    els.tickerTypeBadge.style.background = pStyle.bg;
+    els.tickerTypeBadge.style.borderColor = `${pStyle.color}44`;
+    els.tickerTypeBadge.innerHTML = `${polarityIconHtml(pStyle)} ${sMeta.label}`;
     els.tickerRoute.textContent = formatEventRoute(ev, false);
     els.tickerHeadline.textContent = ev.headline;
 
     showMapEventPopup(ev, fromMeta, toMeta, tMeta);
-    renderBackgroundArcs();
-    renderTickerQueue();
+    renderBackgroundArcs(true);
+    renderTickerQueue(true);
     highlightDossierEvent(ev.id);
-    highlightMarqueeItem(state.activeEventIdx);
 
-    // Draw SVG animation for active event (supports single or multilateral converging arcs)
-    const sub = ev.sub || "";
-    const spawnMoneyFountain = (cx, cy) => {
-      const particles = [];
-      const count = 11;
-      for (let i = 0; i < count; i++) {
-        const isBill = i % 3 === 0;
-        const pg = svgEl("g", { transform: `translate(${cx}, ${cy})` });
-        if (isBill) {
-          pg.appendChild(svgEl("rect", {
-            x: -6, y: -3.5, width: 12, height: 7, rx: 1.5,
-            fill: "#22c55e", stroke: "#15803d", "stroke-width": "0.9",
-          }));
-          const bt = svgEl("text", {
-            x: 0, y: 0.4, "text-anchor": "middle", "dominant-baseline": "central",
-            fill: "#fef08a", "font-size": "6.5", "font-weight": "900",
-          });
-          bt.textContent = "$";
-          pg.appendChild(bt);
-        } else {
-          pg.appendChild(svgEl("circle", {
-            cx: 0, cy: 0, r: 4.6,
-            fill: "#facc15", stroke: "#ca8a04", "stroke-width": "0.9",
-          }));
-          const ct = svgEl("text", {
-            x: 0, y: 0.4, "text-anchor": "middle", "dominant-baseline": "central",
-            fill: "#15803d", "font-size": "6.5", "font-weight": "900",
-          });
-          ct.textContent = "$";
-          pg.appendChild(ct);
-        }
-        els.animLayer.appendChild(pg);
-        const spread = (i - (count - 1) / 2) / ((count - 1) / 2);
-        particles.push({
-          el: pg,
-          vx: spread * (16 + Math.random() * 14),
-          vy: -(28 + Math.random() * 20),
-          rot: (Math.random() - 0.5) * 180,
-          delay: (i % 4) * 0.08,
-        });
-      }
-      const fStart = performance.now();
-      const fDur = Math.round(1600 / state.speed);
-      const gravity = 76;
-      function stepFountain(now) {
-        const rawT = (now - fStart) / fDur;
-        let alive = false;
-        for (const p of particles) {
-          const lt = Math.max(0, rawT - p.delay);
-          if (lt <= 1) alive = true;
-          const px = cx + p.vx * lt;
-          const py = cy + p.vy * lt + 0.5 * gravity * lt * lt;
-          const op = lt >= 1 ? 0 : Math.max(0, 1 - Math.pow(lt, 1.8));
-          p.el.setAttribute("transform", `translate(${px.toFixed(1)}, ${py.toFixed(1)}) rotate(${(p.rot * lt).toFixed(1)})`);
-          p.el.setAttribute("opacity", op.toFixed(2));
-        }
-        if (alive) {
-          state.animFrameId = requestAnimationFrame(stepFountain);
-        }
-      }
-      state.animFrameId = requestAnimationFrame(stepFountain);
-    };
-
+    // Draw SVG animation for active event (bidirectional arcs & polarity-colored badges)
     if (toMeta) {
       const sources = ev.fromList && ev.fromList.length > 1 ? ev.fromList : [ev.from];
-      const isDirectional = sub === "summit" || sub === "airstrike" || sub === "missile" || (ev.type === "diplomacy" && sub === "envoy");
 
-      const createVehicleGroup = (p1) => {
+      const createBadgeGroup = (p1) => {
         const vg = svgEl("g", {
           transform: `translate(${p1.x}, ${p1.y})`,
           filter: "url(#glowSoft)",
         });
-        if (sub === "summit" || (ev.type === "diplomacy" && sub === "envoy")) {
-          vg.appendChild(svgEl("path", {
-            d: "M 13,0 C 10,-2 6,-2.2 2,-2.2 L -3,-12.5 L -6,-12.5 L -2.5,-2.2 L -9,-1.7 L -11.8,-5 L -13.6,-5 L -11.5,0 L -13.6,5 L -11.8,5 L -9,1.7 L -2.5,2.2 L -6,12.5 L -3,12.5 L 2,2.2 C 6,2.2 10,2 13,0 Z",
-            fill: "#34d399",
-            stroke: "#064e3b",
-            "stroke-width": "0.85",
-          }));
-        } else if (sub === "missile") {
-          vg.appendChild(svgEl("path", {
-            d: "M 14,0 L 6,-2.5 L -8,-2.5 L -12,-5.5 L -10,-2 L -10,2 L -12,5.5 L -8,2.5 L 6,2.5 Z",
-            fill: "#ef4444",
-            stroke: "#fef08a",
-            "stroke-width": "0.8",
-          }));
-          vg.appendChild(svgEl("path", {
-            d: "M -10,-1.5 L -16,0 L -10,1.5 Z",
-            fill: "#f97316",
-          }));
-        } else if (sub === "airstrike") {
-          vg.appendChild(svgEl("path", {
-            d: "M 14,0 L 3,-2 L -9,-10.5 L -11,-8 L -7,-2 L -12,-3.5 L -10.5,0 L -12,3.5 L -7,2 L -11,8 L -9,10.5 L 3,2 Z",
-            fill: "#f87171",
-            stroke: "#7f1d1d",
-            "stroke-width": "0.85",
-          }));
-        } else if (sub === "naval") {
-          vg.appendChild(svgEl("path", {
-            d: "M -13,2 L -10,6 L 10,6 L 14,1 L 6,1 L 4,-3 L 1,-3 L 1,-7 L -2,-7 L -2,-3 L -6,-3 L -7,1 L -13,1 Z",
-            fill: "#f87171",
-            stroke: "#fef2f2",
-            "stroke-width": "0.7",
-          }));
-        } else if (sub === "ground") {
-          vg.appendChild(svgEl("path", {
-            d: "M -13,2 L -9,2 L -7,5 L -4,5 L -5,2 L 4,2 L 4,0.5 L 13,0.5 L 13,-1 L 3,-1 L 1,-3 L -4,-3 L -6,-1 L -13,-1 Z",
-            fill: "#f87171",
-            stroke: "#7f1d1d",
-            "stroke-width": "0.6",
-          }));
-        } else if (sub === "sanction") {
-          // Tariff / Sanction Shield + Hazard Barricade Emblem
-          vg.appendChild(svgEl("path", {
-            d: "M 0,-11.5 L 9.5,-7.5 L 9.5,1 C 9.5,7 0,11.5 0,11.5 C 0,11.5 -9.5,7 -9.5,1 L -9.5,-7.5 Z",
-            fill: "#991b1b",
-            stroke: "#fbbf24",
-            "stroke-width": "1.3",
-          }));
-          vg.appendChild(svgEl("rect", {
-            x: -10.5, y: -2.6, width: 21, height: 5.2, rx: 1.2,
-            fill: "#f59e0b",
-            stroke: "#451a03",
-            "stroke-width": "0.9",
-          }));
-          vg.appendChild(svgEl("path", {
-            d: "M -7.5,-2.4 L -4,2.4 M -1.5,-2.4 L 2,2.4 M 4.5,-2.4 L 8,2.4",
-            stroke: "#451a03",
-            "stroke-width": "1.8",
-            "stroke-linecap": "butt",
-          }));
-        } else if (sub === "aid_tech") {
-          // Bright gold coin + emerald green $ emblem
-          vg.appendChild(svgEl("circle", {
-            cx: 0, cy: 0, r: 10.5,
-            fill: "#facc15",
-            stroke: "#ca8a04",
-            "stroke-width": "1.4",
-          }));
-          vg.appendChild(svgEl("circle", {
-            cx: 0, cy: 0, r: 8.2,
-            fill: "none",
-            stroke: "#fef08a",
-            "stroke-width": "0.9",
-          }));
-          const dText = svgEl("text", {
-            x: 0, y: 0.6,
-            "text-anchor": "middle",
-            "dominant-baseline": "central",
-            fill: "#15803d",
-            "font-size": "13.5",
-            "font-weight": "900",
-          });
-          dText.textContent = "$";
-          vg.appendChild(dText);
-        } else {
-          const iconText = svgEl("text", { class: "moving-badge", x: 0, y: 0 });
-          iconText.textContent = sMeta.icon;
-          vg.appendChild(iconText);
-        }
+        vg.appendChild(svgEl("circle", {
+          cx: 0, cy: 0, r: 12,
+          fill: pStyle.bg,
+          stroke: pStyle.color,
+          "stroke-width": "2.2",
+        }));
+        appendSvgBadgeIcon(vg, pStyle);
         return vg;
       };
 
@@ -884,49 +960,51 @@
         const animPath = svgEl("path", {
           d: arc.d,
           class: `event-arc ${ev.type} active`,
+          style: `stroke:${pStyle.color};`,
           filter: "url(#glowSoft)",
         });
         els.arcsLayer.appendChild(animPath);
-        const vg = createVehicleGroup(arc.p1);
+        els.animLayer.appendChild(svgEl("circle", {
+          cx: arc.p1.x, cy: arc.p1.y, r: 6,
+          stroke: pStyle.color,
+          class: "ripple-wave",
+        }));
+        const vg = createBadgeGroup(arc.p1);
         els.animLayer.appendChild(vg);
-        movers.push({ animPath, totalLen: animPath.getTotalLength(), vg });
+        movers.push({ animPath, totalLen: animPath.getTotalLength(), vg, p1: arc.p1 });
       });
 
       if (movers.length > 0) {
-        const duration = Math.round(1600 / state.speed);
+        const period = 1600;
         const start = performance.now();
-        let rippleSpawned = false;
+        let lastLeg = 0;
 
         function step(now) {
-          const prog = Math.min(1, (now - start) / duration);
+          const rawPhase = (now - start) / period;
+          const leg = Math.floor(rawPhase);
+          const localT = rawPhase - leg;
+          const eased = 0.5 - 0.5 * Math.cos(Math.PI * localT);
+          const prog = leg % 2 === 0 ? eased : 1 - eased;
+
           for (const m of movers) {
             const dist = prog * m.totalLen;
             const pt = m.animPath.getPointAtLength(dist);
-            if (isDirectional && m.totalLen > 4) {
-              const pBack = m.animPath.getPointAtLength(Math.max(0, dist - 2));
-              const pFwd = m.animPath.getPointAtLength(Math.min(m.totalLen, dist + 2));
-              const angle = Math.atan2(pFwd.y - pBack.y, pFwd.x - pBack.x) * (180 / Math.PI);
-              m.vg.setAttribute("transform", `translate(${pt.x}, ${pt.y}) rotate(${angle.toFixed(1)})`);
-            } else {
-              m.vg.setAttribute("transform", `translate(${pt.x}, ${pt.y})`);
-            }
+            m.vg.setAttribute("transform", `translate(${pt.x}, ${pt.y})`);
           }
-          if (prog >= 1 && !rippleSpawned) {
-            rippleSpawned = true;
-            const destPt = project(toMeta.lat, toMeta.lon);
-            if (sub === "aid_tech") {
-              spawnMoneyFountain(destPt.x, destPt.y);
-            } else if (sources.length > 1) {
-              els.animLayer.appendChild(svgEl("circle", {
-                cx: destPt.x, cy: destPt.y, r: 8,
-                stroke: tMeta.color,
+          if (leg > lastLeg) {
+            lastLeg = leg;
+            const hitPts = leg % 2 === 1 ? [project(toMeta.lat, toMeta.lon)] : movers.map((m) => m.p1);
+            hitPts.forEach((hitPt) => {
+              const ripple = svgEl("circle", {
+                cx: hitPt.x, cy: hitPt.y, r: 7,
+                stroke: pStyle.color,
                 class: "ripple-wave",
-              }));
-            }
+              });
+              els.animLayer.appendChild(ripple);
+              setTimeout(() => ripple.remove(), 1100);
+            });
           }
-          if (prog < 1) {
-            state.animFrameId = requestAnimationFrame(step);
-          }
+          state.animFrameId = requestAnimationFrame(step);
         }
         state.animFrameId = requestAnimationFrame(step);
       }
@@ -934,31 +1012,42 @@
       const pt = project(fromMeta.lat, fromMeta.lon);
       els.animLayer.appendChild(svgEl("circle", {
         cx: pt.x, cy: pt.y, r: 6.5,
-        stroke: tMeta.color,
+        stroke: pStyle.color,
         class: "ripple-wave",
       }));
-      if (sub === "aid_tech" || (ev.type === "economy" && sub !== "sanction")) {
-        spawnMoneyFountain(pt.x, pt.y);
-      } else {
-        const iconText = svgEl("text", { x: pt.x, y: pt.y - 16, class: "moving-badge" });
-        iconText.textContent = sMeta.icon;
-        els.animLayer.appendChild(iconText);
-      }
+      const vg = svgEl("g", {
+        transform: `translate(${pt.x}, ${pt.y - 16})`,
+        filter: "url(#glowSoft)",
+      });
+      vg.appendChild(svgEl("circle", {
+        cx: 0, cy: 0, r: 12,
+        fill: pStyle.bg,
+        stroke: pStyle.color,
+        "stroke-width": "2.2",
+      }));
+      appendSvgBadgeIcon(vg, pStyle);
+      els.animLayer.appendChild(vg);
     }
 
-    // Next event triggers when the marquee item scrolls to the viewport center
+    if (state.isPlayingEvents && !state.isTimelapse && events.length > 1) {
+      const switchMs = Math.round(4000 / state.speed);
+      state.eventTimerId = setTimeout(() => {
+        state.activeEventIdx = (state.activeEventIdx + 1) % events.length;
+        playActiveEvent();
+      }, switchMs);
+    }
   }
 
-  function renderTickerQueue() {
+  function renderTickerQueue(showActive = state.isPlayingEvents) {
     els.tickerQueue.innerHTML = "";
     const frag = document.createDocumentFragment();
     state.filteredEvents.forEach((ev, idx) => {
       const btn = document.createElement("button");
-      btn.className = `q-dot${idx === state.activeEventIdx ? " active" : ""}`;
+      const isActive = showActive && idx === state.activeEventIdx;
+      btn.className = `q-dot${isActive ? " active" : ""}`;
       btn.title = ev.headline;
       btn.addEventListener("click", () => {
         state.activeEventIdx = idx;
-        centerMarqueeOnEvent(idx);
         playActiveEvent();
       });
       frag.appendChild(btn);
@@ -1018,22 +1107,23 @@
       isCarriedRef = displayEvents.length > 0;
     }
 
+    const winLabel = state.windowDays > 1 ? ` · 최근 ${state.windowDays}일` : "";
     els.dossierEventCount.textContent = isCarriedRef
       ? `${displayEvents.length} · ${st.asOf} 유지`
-      : displayEvents.length;
+      : `${displayEvents.length}${winLabel}`;
     els.dossierEventsList.innerHTML = "";
     const frag = document.createDocumentFragment();
     displayEvents.forEach((ev, idx) => {
       const li = document.createElement("li");
       li.className = "dossier-event-item";
       li.dataset.evId = ev.id;
-      const tMeta = TYPE_META[ev.type] || TYPE_META.diplomacy;
+      const pStyle = getPolarityStyle(ev);
       const route = formatEventRoute(ev, true);
-      li.innerHTML = `<div style="color:${tMeta.color};font-weight:700;margin-bottom:2px;">${tMeta.icon} ${route}</div><div>${ev.headline}</div>`;
+      const dateTag = state.windowDays > 1 && ev._date ? `<span style="color:#64748b;font-weight:500;margin-right:4px;">[${ev._date.slice(5)}]</span>` : "";
+      li.innerHTML = `<div style="color:${pStyle.color};font-weight:700;margin-bottom:2px;">${dateTag}${polarityIconHtml(pStyle)} ${route}</div><div>${ev.headline}</div>`;
       if (!isCarriedRef) {
         li.addEventListener("click", () => {
           state.activeEventIdx = idx;
-          centerMarqueeOnEvent(idx);
           playActiveEvent();
         });
       }
@@ -1241,107 +1331,40 @@
     }
   }
 
-  function centerMarqueeOnEvent(idx) {
-    const track = els.tickerMarqueeTrack;
-    if (!track || !state.marqueePassWidth || !state.marqueeRanges.length) return;
-    const range = state.marqueeRanges[idx];
-    if (!range) return;
-    const vpWidth = track.parentElement ? track.parentElement.clientWidth : 600;
-    const rawOffset = range.start - vpWidth * 0.48;
-    const pw = state.marqueePassWidth;
-    state.marqueeOffset = ((rawOffset % pw) + pw) % pw;
-    track.style.transform = `translate3d(${-state.marqueeOffset.toFixed(1)}px, 0, 0)`;
+  function renderStaticReadyState() {
+    stopEventAnimation();
+    els.animLayer.innerHTML = "";
+    state.popupAnchorMeta = null;
+    els.mapEventPopup.classList.add("hidden");
+    renderBackgroundArcs(false);
+    renderTickerQueue(false);
+    els.tickerTypeBadge.className = "ev-badge";
+    els.tickerTypeBadge.style.color = "";
+    els.tickerTypeBadge.style.background = "";
+    els.tickerTypeBadge.style.borderColor = "";
+    els.tickerTypeBadge.textContent = "READY";
+    els.tickerRoute.textContent = `${state.windowDays}일 · ${state.filteredEvents.length}건`;
+    els.tickerHeadline.textContent = "국가를 클릭해 상세 정보를 확인하거나 ▶ 버튼을 눌러 시뮬레이션을 시작하세요.";
   }
 
-  function startMarqueeLoop() {
-    if (state.marqueeRafId) return;
-    state.marqueeLastTs = performance.now();
-    const tick = (now) => {
-      const dt = Math.min(0.1, Math.max(0, (now - state.marqueeLastTs) / 1000));
-      state.marqueeLastTs = now;
-      const track = els.tickerMarqueeTrack;
-      const pw = state.marqueePassWidth;
-      if (
-        track && pw > 0 && state.marqueeRanges.length > 0 &&
-        state.isPlayingEvents && !state.isTimelapse && !state.marqueeHovered
-      ) {
-        const pxPerSec = 85 * state.speed;
-        state.marqueeOffset = (state.marqueeOffset + pxPerSec * dt) % pw;
-        track.style.transform = `translate3d(${-state.marqueeOffset.toFixed(1)}px, 0, 0)`;
-
-        const vpWidth = track.parentElement ? track.parentElement.clientWidth : 600;
-        const centerPos = (state.marqueeOffset + vpWidth * 0.5) % pw;
-        for (const r of state.marqueeRanges) {
-          if (centerPos >= r.start && centerPos < r.end) {
-            if (r.idx !== state.activeEventIdx) {
-              state.activeEventIdx = r.idx;
-              playActiveEvent();
-            }
-            break;
-          }
-        }
-      }
-      state.marqueeRafId = requestAnimationFrame(tick);
-    };
-    state.marqueeRafId = requestAnimationFrame(tick);
-  }
-
-  function renderMarquee() {
-    const track = els.tickerMarqueeTrack;
-    if (!track) return;
-    track.innerHTML = "";
-    state.marqueePassWidth = 0;
-    state.marqueeRanges = [];
-    const events = state.filteredEvents;
-    if (!events.length) {
-      track.style.transform = "translate3d(0, 0, 0)";
-      track.textContent = "선택된 조건의 뉴스가 없습니다.";
-      return;
-    }
-
-    const buildPass = () => {
-      const frag = document.createDocumentFragment();
-      events.forEach((ev, idx) => {
-        const sMeta = SUBTYPE_META[ev.sub] || TYPE_META[ev.type] || TYPE_META.diplomacy;
-        const route = formatEventRoute(ev, true);
-
-        const span = document.createElement("span");
-        span.className = "marquee-item";
-        span.dataset.idx = String(idx);
-        span.innerHTML = `<span>${sMeta.icon}</span><strong style="color:#0369a1">[${route}]</strong><span>${ev.headline}</span><span class="marquee-sep">|</span>`;
-        span.addEventListener("click", () => {
-          state.activeEventIdx = idx;
-          centerMarqueeOnEvent(idx);
-          playActiveEvent();
-        });
-        frag.appendChild(span);
-      });
-      return frag;
-    };
-
-    track.appendChild(buildPass());
-    track.appendChild(buildPass());
-
-    const allItems = track.querySelectorAll(".marquee-item");
-    const pw = allItems.length > events.length
-      ? allItems[events.length].offsetLeft
-      : track.scrollWidth / 2;
-    state.marqueePassWidth = pw;
-    state.marqueeRanges = [];
-    for (let i = 0; i < events.length; i++) {
-      const start = allItems[i].offsetLeft;
-      const end = i + 1 < events.length ? allItems[i + 1].offsetLeft : pw;
-      state.marqueeRanges.push({ idx: i, start, end });
-    }
-    centerMarqueeOnEvent(state.activeEventIdx);
-    startMarqueeLoop();
-  }
-
-  function highlightMarqueeItem(activeIdx) {
-    if (!els.tickerMarqueeTrack) return;
-    els.tickerMarqueeTrack.querySelectorAll(".marquee-item").forEach((el) => {
-      el.classList.toggle("active", Number(el.dataset.idx) === activeIdx);
+  function resetAllState() {
+    if (state.isTimelapse) toggleTimelapse();
+    state.selectedCountries.clear();
+    state.lastFocusedCountry = null;
+    state.activeTheme = "all";
+    state.windowDays = 7;
+    document.querySelectorAll(".filter-btn").forEach((b) => {
+      b.classList.toggle("active", b.dataset.theme === "all");
     });
+    document.querySelectorAll(".win-btn").forEach((b) => {
+      b.classList.toggle("active", Number(b.dataset.days) === 7);
+    });
+    state.isPlayingEvents = false;
+    els.playEventsBtn.textContent = "▶";
+    els.playEventsBtn.classList.remove("playing");
+    state.activeEventIdx = 0;
+    resetZoom();
+    renderAll();
   }
 
   function renderAll() {
@@ -1351,25 +1374,109 @@
     renderCountries();
     renderDossierCard();
     syncViewBox(state.lastFocusedCountry, true);
-    renderMarquee();
-    playActiveEvent();
+    if (state.isPlayingEvents) {
+      playActiveEvent();
+    } else {
+      renderStaticReadyState();
+    }
   }
 
   // Event Listeners
-  els.dateSelect.addEventListener("change", (e) => {
-    state.currentDate = e.target.value;
-    state.activeEventIdx = 0;
-    renderAll();
+  const toggleCalendar = (e) => {
+    e.stopPropagation();
+    if (els.calendarPopover && els.calendarPopover.hidden) {
+      openCalendarPopover();
+    } else {
+      closeCalendarPopover();
+    }
+  };
+  if (els.currentDateBtn) els.currentDateBtn.addEventListener("click", toggleCalendar);
+  if (els.mapDeskCalendar) els.mapDeskCalendar.addEventListener("click", toggleCalendar);
+
+  if (els.calYearSelect) {
+    els.calYearSelect.addEventListener("change", () => {
+      state.calYear = Number(els.calYearSelect.value);
+      renderCalendarGrid();
+    });
+  }
+  if (els.calMonthSelect) {
+    els.calMonthSelect.addEventListener("change", () => {
+      state.calMonth = Number(els.calMonthSelect.value);
+      renderCalendarGrid();
+    });
+  }
+  if (els.calPrevMonthBtn) {
+    els.calPrevMonthBtn.addEventListener("click", () => {
+      state.calMonth -= 1;
+      if (state.calMonth < 1) { state.calMonth = 12; state.calYear -= 1; }
+      renderCalendarGrid();
+    });
+  }
+  if (els.calNextMonthBtn) {
+    els.calNextMonthBtn.addEventListener("click", () => {
+      state.calMonth += 1;
+      if (state.calMonth > 12) { state.calMonth = 1; state.calYear += 1; }
+      renderCalendarGrid();
+    });
+  }
+  if (els.calDaysGrid) {
+    els.calDaysGrid.addEventListener("click", (e) => {
+      const dayBtn = e.target.closest(".cal-day-available");
+      if (!dayBtn) return;
+      const targetDate = dayBtn.getAttribute("data-date");
+      if (targetDate) {
+        state.currentDate = targetDate;
+        state.activeEventIdx = 0;
+        closeCalendarPopover();
+        renderAll();
+      }
+    });
+  }
+  if (els.calGoLatestBtn) {
+    els.calGoLatestBtn.addEventListener("click", () => {
+      if (LATEST_DATE) {
+        state.currentDate = LATEST_DATE;
+        state.activeEventIdx = 0;
+        closeCalendarPopover();
+        renderAll();
+      }
+    });
+  }
+  if (els.calCloseBtn) els.calCloseBtn.addEventListener("click", closeCalendarPopover);
+
+  document.addEventListener("click", (e) => {
+    if (
+      els.calendarPopover && !els.calendarPopover.hidden &&
+      els.calendarTriggerWrap && !els.calendarTriggerWrap.contains(e.target) &&
+      (!els.mapDeskCalendar || !els.mapDeskCalendar.contains(e.target))
+    ) {
+      closeCalendarPopover();
+    }
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && els.calendarPopover && !els.calendarPopover.hidden) {
+      closeCalendarPopover();
+    }
   });
   els.prevDateBtn.addEventListener("click", () => stepDate(-1));
   els.nextDateBtn.addEventListener("click", () => stepDate(1));
   els.timelapseBtn.addEventListener("click", toggleTimelapse);
 
+  document.querySelectorAll(".win-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".win-btn").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      state.windowDays = Number(btn.dataset.days) || 7;
+      state.activeEventIdx = 0;
+      renderAll();
+    });
+  });
+
   document.querySelectorAll(".filter-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       document.querySelectorAll(".filter-btn").forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
-      state.activeType = btn.dataset.type;
+      state.activeTheme = btn.dataset.theme || "all";
       state.activeEventIdx = 0;
       renderAll();
     });
@@ -1418,35 +1525,32 @@
   if (els.zoomOutBtn) els.zoomOutBtn.addEventListener("click", () => zoomMap(1.28));
   if (els.zoomResetBtn) els.zoomResetBtn.addEventListener("click", resetZoom);
   window.addEventListener("resize", () => syncViewBox());
-  els.resetSelectionBtn.addEventListener("click", clearSelection);
+  els.resetSelectionBtn.addEventListener("click", resetAllState);
   els.closeDossierBtn.addEventListener("click", clearSelection);
 
   els.playEventsBtn.addEventListener("click", () => {
     state.isPlayingEvents = !state.isPlayingEvents;
     els.playEventsBtn.textContent = state.isPlayingEvents ? "⏸" : "▶";
+    els.playEventsBtn.classList.toggle("playing", state.isPlayingEvents);
     if (state.isPlayingEvents) {
       playActiveEvent();
     } else {
-      stopEventAnimation();
+      renderStaticReadyState();
     }
   });
 
+  const SPEED_STEPS = [0.5, 1, 2];
   els.speedBtn.addEventListener("click", () => {
-    state.speed = state.speed === 1 ? 2 : 1;
+    const nextIdx = (SPEED_STEPS.indexOf(state.speed) + 1) % SPEED_STEPS.length;
+    state.speed = SPEED_STEPS[nextIdx];
     els.speedBtn.textContent = `${state.speed}x`;
     if (state.isTimelapse) {
       toggleTimelapse();
       toggleTimelapse();
-    } else {
+    } else if (state.isPlayingEvents) {
       playActiveEvent();
     }
   });
-
-  if (els.tickerMarqueeTrack && els.tickerMarqueeTrack.parentElement && els.tickerMarqueeTrack.parentElement.parentElement) {
-    const marqueeWrap = els.tickerMarqueeTrack.parentElement.parentElement;
-    marqueeWrap.addEventListener("mouseenter", () => { state.marqueeHovered = true; });
-    marqueeWrap.addEventListener("mouseleave", () => { state.marqueeHovered = false; });
-  }
 
   // Boot
   initBaseMap();
