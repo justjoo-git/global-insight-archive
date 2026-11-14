@@ -1402,11 +1402,27 @@ body {
     flex-shrink: 0;
   }
   .ticker-bar {
-    padding: 6px 10px;
+    padding: 5px 10px;
+    gap: 6px;
+  }
+  .ticker-main-row {
+    min-height: 36px;
     gap: 8px;
+  }
+  .ticker-route {
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .ticker-headline {
     font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ticker-bar.is-playing .ticker-headline {
+    display: none;
   }
   .calendar-popover {
     width: min(288px, calc(100vw - 24px));

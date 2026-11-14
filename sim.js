@@ -1362,6 +1362,8 @@
     state.isPlayingEvents = false;
     els.playEventsBtn.textContent = "▶";
     els.playEventsBtn.classList.remove("playing");
+    const tickerBar = els.playEventsBtn.closest(".ticker-bar");
+    if (tickerBar) tickerBar.classList.remove("is-playing");
     state.activeEventIdx = 0;
     resetZoom();
     renderAll();
@@ -1585,6 +1587,8 @@
     state.isPlayingEvents = !state.isPlayingEvents;
     els.playEventsBtn.textContent = state.isPlayingEvents ? "⏸" : "▶";
     els.playEventsBtn.classList.toggle("playing", state.isPlayingEvents);
+    const tickerBar = els.playEventsBtn.closest(".ticker-bar");
+    if (tickerBar) tickerBar.classList.toggle("is-playing", state.isPlayingEvents);
     if (state.isPlayingEvents) {
       playActiveEvent();
     } else {
