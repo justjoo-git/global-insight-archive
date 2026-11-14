@@ -1521,6 +1521,59 @@
     zoomMap(factor, e.clientX, e.clientY);
   }, { passive: false });
 
+  // Touch panning (1-finger) & pinch-to-zoom (2-finger) on map
+  let touchPan = null;
+  let pinchDist = 0;
+  els.worldSvg.addEventListener("touchstart", (e) => {
+    if (e.touches.length === 1) {
+      const t = e.touches[0];
+      touchPan = { x: t.clientX, y: t.clientY, vx: state.vx, vy: state.vy };
+      pinchDist = 0;
+      state.didDrag = false;
+    } else if (e.touches.length === 2) {
+      touchPan = null;
+      const [t0, t1] = e.touches;
+      pinchDist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+      state.didDrag = true;
+    }
+  }, { passive: true });
+  els.worldSvg.addEventListener("touchmove", (e) => {
+    if (e.touches.length === 1 && touchPan) {
+      e.preventDefault();
+      const t = e.touches[0];
+      const dxPx = t.clientX - touchPan.x;
+      const dyPx = t.clientY - touchPan.y;
+      if (Math.hypot(dxPx, dyPx) > 5) state.didDrag = true;
+      const rect = els.worldSvg.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      state.vx = touchPan.vx - (dxPx / rect.width) * state.vw;
+      state.vy = touchPan.vy - (dyPx / rect.height) * state.vh;
+      clampViewBox();
+      applyViewBox();
+    } else if (e.touches.length === 2 && pinchDist > 0) {
+      e.preventDefault();
+      const [t0, t1] = e.touches;
+      const newDist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+      if (newDist > 0) {
+        const factor = pinchDist / newDist;
+        const midX = (t0.clientX + t1.clientX) / 2;
+        const midY = (t0.clientY + t1.clientY) / 2;
+        zoomMap(factor, midX, midY);
+        pinchDist = newDist;
+      }
+    }
+  }, { passive: false });
+  els.worldSvg.addEventListener("touchend", (e) => {
+    if (e.touches.length === 1) {
+      const t = e.touches[0];
+      touchPan = { x: t.clientX, y: t.clientY, vx: state.vx, vy: state.vy };
+      pinchDist = 0;
+    } else if (e.touches.length === 0) {
+      touchPan = null;
+      pinchDist = 0;
+    }
+  }, { passive: true });
+
   if (els.zoomInBtn) els.zoomInBtn.addEventListener("click", () => zoomMap(0.78));
   if (els.zoomOutBtn) els.zoomOutBtn.addEventListener("click", () => zoomMap(1.28));
   if (els.zoomResetBtn) els.zoomResetBtn.addEventListener("click", resetZoom);

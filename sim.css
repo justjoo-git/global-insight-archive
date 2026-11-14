@@ -1382,9 +1382,37 @@ body {
   }
   .brand-sub,
   .tension-label,
-  .toolbar,
-  .ticker-bar {
+  .selection-bar .hint-text,
+  .ticker-queue {
     display: none;
+  }
+  .toolbar {
+    padding: 6px 10px;
+    gap: 6px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .toolbar::-webkit-scrollbar {
+    display: none;
+  }
+  .toolbar-group,
+  .selection-bar {
+    flex-shrink: 0;
+  }
+  .ticker-bar {
+    padding: 6px 10px;
+    gap: 8px;
+  }
+  .ticker-headline {
+    font-size: 12px;
+  }
+  .calendar-popover {
+    width: min(288px, calc(100vw - 24px));
+  }
+  #worldSvg {
+    touch-action: none;
   }
   .desk-calendar {
     transform: scale(0.74);
@@ -1407,7 +1435,7 @@ body {
     position: absolute;
     width: auto;
     height: auto;
-    max-height: 46%;
+    max-height: 50%;
     top: auto;
     bottom: 10px;
     left: 10px;
@@ -1420,10 +1448,15 @@ body {
     overflow-y: auto;
   }
   .dossier-card .trend-box,
-  .dossier-card .stat-pills,
-  .dossier-card .dossier-events-head,
-  .dossier-card .dossier-events-list {
+  .dossier-card .stat-pills {
     display: none;
+  }
+  .dossier-card .dossier-events-head {
+    margin-top: 8px;
+  }
+  .dossier-card .dossier-events-list {
+    max-height: 150px;
+    overflow-y: auto;
   }
   .dossier-card .dossier-info {
     border-bottom: none;
