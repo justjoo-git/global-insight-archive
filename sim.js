@@ -194,7 +194,10 @@
       "viewBox",
       `${state.vx.toFixed(1)} ${state.vy.toFixed(1)} ${state.vw.toFixed(1)} ${state.vh.toFixed(1)}`
     );
-    const zoomScale = +(state.vw / 795).toFixed(4);
+    const svgRect = els.worldSvg ? els.worldSvg.getBoundingClientRect() : null;
+    const svgWidth = svgRect && svgRect.width > 0 ? svgRect.width : window.innerWidth;
+    const baseWidth = svgWidth < 820 ? Math.max(260, svgWidth * 0.76) : 795;
+    const zoomScale = +(state.vw / baseWidth).toFixed(4);
     if (els.countriesLayer) {
       els.countriesLayer.querySelectorAll(".country-node").forEach((node) => {
         const nx = node.getAttribute("data-x");
@@ -574,7 +577,10 @@
       "israel", "iran", "saudi-arabia", "turkey", "indonesia", "vietnam", "mexico",
     ]);
 
-    const zoomScale = +(state.vw / 795).toFixed(4);
+    const svgRect = els.worldSvg ? els.worldSvg.getBoundingClientRect() : null;
+    const svgWidth = svgRect && svgRect.width > 0 ? svgRect.width : window.innerWidth;
+    const baseWidth = svgWidth < 820 ? Math.max(260, svgWidth * 0.76) : 795;
+    const zoomScale = +(state.vw / baseWidth).toFixed(4);
     const frag = document.createDocumentFragment();
     for (const [cKey, meta] of Object.entries(DATA.countries)) {
       const st = statusMap[cKey];
