@@ -348,6 +348,12 @@
       state.calMonth = Number(parts[1]);
     }
     renderCalendarGrid();
+    if (window.innerWidth <= 820 && els.currentDateBtn) {
+      const rect = els.currentDateBtn.getBoundingClientRect();
+      els.calendarPopover.style.top = `${Math.round(rect.bottom + 6)}px`;
+    } else {
+      els.calendarPopover.style.top = "";
+    }
     els.calendarPopover.hidden = false;
     if (els.currentDateBtn) els.currentDateBtn.setAttribute("aria-expanded", "true");
   }
