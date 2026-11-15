@@ -319,8 +319,9 @@ body {
   display: none !important;
 }
 
-/* Map Workspace (Map + Docked Right Panel) */
+/* Map Workspace (Map + Floating Right Panel) */
 .map-workspace {
+  position: relative;
   display: flex;
   flex: 1;
   min-height: 0;
@@ -797,16 +798,28 @@ body {
 
 /* Docked Right RPG Dossier Panel */
 .dossier-card {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
   width: 325px;
-  flex-shrink: 0;
   height: 100%;
-  background: var(--bg-deep);
+  background: rgba(252, 251, 249, 0.96);
+  backdrop-filter: blur(6px);
   border-left: 1px solid var(--border);
+  box-shadow: -6px 0 24px rgba(17, 17, 17, 0.14);
+  z-index: 35;
   padding: 14px;
   display: flex;
   flex-direction: column;
   gap: 10px;
   overflow: hidden;
+}
+
+@media (min-width: 821px) {
+  .map-workspace:has(.dossier-card:not(.hidden)) .map-zoom-controls {
+    right: 339px;
+  }
 }
 
 .dossier-header {
