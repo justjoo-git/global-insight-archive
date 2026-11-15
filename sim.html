@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GeoSim — 실시간 지정학 시뮬레이션 맵 (Prototype)</title>
-  <link rel="stylesheet" href="sim.css?v=20261114w" />
+  <link rel="stylesheet" href="sim.css?v=20261115b" />
 </head>
 <body>
   <div class="sim-shell">
@@ -72,9 +72,10 @@
           <button class="filter-btn active" data-theme="all">전체</button>
           <button class="filter-btn theme-neg" data-theme="war"><svg viewBox="-9 -9 18 18" width="13" height="13" style="vertical-align:-2px;margin-right:2px" aria-hidden="true"><g transform="rotate(-42)"><path d="M-7.5,-0.9 L5.5,-0.9 L5.5,0.5 L-1.8,0.5 L-3.6,2.1 L-7.8,2.1 L-7.2,0.5 L-7.5,0.5 Z" fill="#b91c1c"/><rect x="1.2" y="-1.6" width="5.8" height="0.8" rx="0.3" fill="#7f1d1d"/><rect x="-0.6" y="0.4" width="1.1" height="2.0" rx="0.2" fill="#7f1d1d"/></g><g transform="scale(-1,1) rotate(-42)"><path d="M-7.5,-0.9 L5.5,-0.9 L5.5,0.5 L-1.8,0.5 L-3.6,2.1 L-7.8,2.1 L-7.2,0.5 L-7.5,0.5 Z" fill="#b91c1c"/><rect x="1.2" y="-1.6" width="5.8" height="0.8" rx="0.3" fill="#7f1d1d"/><rect x="-0.6" y="0.4" width="1.1" height="2.0" rx="0.2" fill="#7f1d1d"/></g></svg>전쟁·충돌</button>
           <button class="filter-btn theme-neg" data-theme="unrest">🔥 시위·불안</button>
-          <button class="filter-btn theme-pos" data-theme="friendly">🤝 우호·협력</button>
-          <button class="filter-btn theme-neg" data-theme="diplo_neg">😠 외교 갈등</button>
-          <button class="filter-btn theme-neg" data-theme="eco_neg">📉 경제 위기</button>
+          <button class="filter-btn theme-neg" data-theme="crisis" title="종합 긴장도 65 이상 위기 단계 국가">🚨 위기 경보</button>
+          <button class="filter-btn theme-neg" data-theme="surge" title="당일 긴장도가 평소 대비 3 이상 급등한 국가">📈 긴장 급등</button>
+          <button class="filter-btn theme-pos" data-theme="ease" title="당일 긴장도가 평소 대비 3 이상 완화된 국가">🕊️ 긴장 완화</button>
+          <button class="filter-btn theme-neg" data-theme="eco_neg" title="경제 갈등·충격 이벤트 발생 국가">💰 경제 충격</button>
           <button id="resetSelectionBtn" class="ctrl-btn reset-big-btn" title="선택 국가·필터·지도 확대 초기화">⟲ 리셋</button>
         </div>
       </div>
@@ -216,7 +217,7 @@
 
   <script src="data/world_map_paths.js?v=20261113f"></script>
   <script src="data/geosim_events.js?v=20261115"></script>
-  <script src="sim.js?v=20261114w"></script>
+  <script src="sim.js?v=20261115b"></script>
 </body>
 </html>
 

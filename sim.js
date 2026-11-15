@@ -367,14 +367,32 @@
     if (els.currentDateBtn) els.currentDateBtn.setAttribute("aria-expanded", "false");
   }
 
-  function matchesTheme(ev, theme) {
+  function getStatusThemeCountries(theme) {
+    if (theme !== "crisis" && theme !== "surge" && theme !== "ease") return null;
+    const statusMap = DATA.statusByDate[state.currentDate] || {};
+    const matched = new Set();
+    for (const [cKey, st] of Object.entries(statusMap)) {
+      const score = Number(st.score || 0);
+      const daily = Number(st.daily ?? score);
+      if (theme === "crisis" && score >= 65) matched.add(cKey);
+      else if (theme === "surge" && daily - score >= 3) matched.add(cKey);
+      else if (theme === "ease" && score - daily >= 3) matched.add(cKey);
+    }
+    return matched;
+  }
+
+  function matchesTheme(ev, theme, statusThemeSet = null) {
     if (!theme || theme === "all") return true;
     const t = Number(ev.tension || 0);
     if (theme === "war") return ev.type === "military" && t > 0;
     if (theme === "unrest") return ev.type === "unrest" && t >= 0;
-    if (theme === "friendly") return (ev.type === "diplomacy" || ev.type === "military") && t < 0;
-    if (theme === "diplo_neg") return ev.type === "diplomacy" && t > 0;
     if (theme === "eco_neg") return ev.type === "economy" && t > 0;
+    if (statusThemeSet) {
+      if (statusThemeSet.has(ev.from)) return true;
+      if (ev.to && statusThemeSet.has(ev.to)) return true;
+      if (ev.fromList && ev.fromList.some((k) => statusThemeSet.has(k))) return true;
+      return false;
+    }
     return true;
   }
 
@@ -388,12 +406,13 @@
 
   function getFilteredEvents() {
     const winDates = getWindowDates();
+    const statusThemeSet = getStatusThemeCountries(state.activeTheme);
     const out = [];
     for (let i = winDates.length - 1; i >= 0; i--) {
       const dStr = winDates[i];
       const raw = DATA.eventsByDate[dStr] || [];
       for (const ev of raw) {
-        if (!matchesTheme(ev, state.activeTheme)) continue;
+        if (!matchesTheme(ev, state.activeTheme, statusThemeSet)) continue;
         if (state.selectedCountries.size > 0) {
           const hitFrom =
             state.selectedCountries.has(ev.from) ||
@@ -543,15 +562,13 @@
       return st ? st.color : "gray";
     };
 
-    const activeInEvents = new Set();
-    for (const ev of state.filteredEvents) {
-      if (ev.from) activeInEvents.add(ev.from);
-      if (ev.to) activeInEvents.add(ev.to);
-      if (ev.fromList) ev.fromList.forEach((k) => activeInEvents.add(k));
-    }
-    if (state.activeTheme === "eco_neg") {
-      for (const [cKey, st] of Object.entries(statusMap)) {
-        if ((st.eco || 0) >= 55) activeInEvents.add(cKey);
+    const statusThemeSet = getStatusThemeCountries(state.activeTheme);
+    const activeInEvents = new Set(statusThemeSet || []);
+    if (!statusThemeSet) {
+      for (const ev of state.filteredEvents) {
+        if (ev.from) activeInEvents.add(ev.from);
+        if (ev.to) activeInEvents.add(ev.to);
+        if (ev.fromList) ev.fromList.forEach((k) => activeInEvents.add(k));
       }
     }
 
@@ -608,7 +625,7 @@
         const ringColor = isSelected
           ? "#0284c7"
           : hasTheme
-            ? (state.activeTheme === "friendly" ? "#10b981" : "#ef4444")
+            ? (state.activeTheme === "ease" ? "#10b981" : "#ef4444")
             : fill;
         g.appendChild(svgEl("circle", {
           cx: 0, cy: 0, r: isSelected ? 7.5 : 6,
