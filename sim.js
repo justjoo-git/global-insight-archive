@@ -1399,7 +1399,6 @@
     const tickerBar = els.playEventsBtn.closest(".ticker-bar");
     if (tickerBar) tickerBar.classList.remove("is-playing");
     state.activeEventIdx = 0;
-    resetZoom();
     renderAll();
   }
 
