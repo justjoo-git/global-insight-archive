@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GeoSim — 실시간 지정학 시뮬레이션 맵 (Prototype)</title>
-  <link rel="stylesheet" href="sim.css?v=20261115c" />
+  <link rel="stylesheet" href="sim.css?v=20261115d" />
 </head>
 <body>
   <div class="sim-shell">
@@ -125,22 +125,26 @@
         </defs>
 
         <!-- Background click catcher for deselecting -->
-        <rect id="mapBg" x="0" y="0" width="1000" height="500" fill="transparent" />
+        <rect id="mapBg" x="-1500" y="0" width="4000" height="500" fill="transparent" />
 
-        <!-- Subtle Grid -->
-        <g id="gridLayer" class="grid-layer"></g>
+        <g id="worldTileBase">
+          <!-- Subtle Grid -->
+          <g id="gridLayer" class="grid-layer"></g>
 
-        <!-- World Country Borders -->
-        <g id="countriesMapLayer"></g>
+          <!-- World Country Borders -->
+          <g id="countriesMapLayer"></g>
 
-        <!-- Event Arcs & Ripples -->
-        <g id="arcsLayer"></g>
+          <!-- Event Arcs & Ripples -->
+          <g id="arcsLayer"></g>
 
-        <!-- 66 Country Pins -->
-        <g id="countriesLayer"></g>
+          <!-- 66 Country Pins -->
+          <g id="countriesLayer"></g>
 
-        <!-- Active Moving Icon / Label -->
-        <g id="animLayer"></g>
+          <!-- Active Moving Icon / Label -->
+          <g id="animLayer"></g>
+        </g>
+        <use id="worldTileLeft" href="#worldTileBase" x="-1014.08" y="0" />
+        <use id="worldTileRight" href="#worldTileBase" x="1014.08" y="0" />
       </svg>
 
       <!-- Map Legend -->
@@ -217,7 +221,7 @@
 
   <script src="data/world_map_paths.js?v=20261113f"></script>
   <script src="data/geosim_events.js?v=20261115"></script>
-  <script src="sim.js?v=20261115c"></script>
+  <script src="sim.js?v=20261115d"></script>
 </body>
 </html>
 

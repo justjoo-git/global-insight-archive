@@ -10,6 +10,7 @@
   const LON_MIN = -175.0, LON_MAX = 180.0;
   const LAT_MIN = -58.0, LAT_MAX = 82.0;
   const WIDTH = 1000.0, HEIGHT = 500.0;
+  const WRAP_W = 1000.0 * (360.0 / (LON_MAX - LON_MIN));
 
   const TYPE_META = {
     military: { label: "전쟁/안보", icon: "⚔️", color: "#dc2626" },
@@ -213,7 +214,7 @@
   function clampViewBox() {
     state.vw = Math.max(180, Math.min(980, state.vw));
     state.vh = state.vw * (380 / 795);
-    state.vx = Math.max(0, Math.min(1000 - state.vw, state.vx));
+    state.vx = ((state.vx % WRAP_W) + WRAP_W) % WRAP_W;
     state.vy = Math.max(0, Math.min(500 - state.vh, state.vy));
   }
 
@@ -853,7 +854,11 @@
     if (!ctm || !stage) return;
     const stageRect = stage.getBoundingClientRect();
     const pt = project(state.popupAnchorMeta.lat, state.popupAnchorMeta.lon);
-    const px = pt.x * ctm.a + ctm.e - stageRect.left;
+    let x = pt.x;
+    const mid = state.vx + state.vw / 2;
+    if (x < mid - WRAP_W / 2) x += WRAP_W;
+    else if (x > mid + WRAP_W / 2) x -= WRAP_W;
+    const px = x * ctm.a + ctm.e - stageRect.left;
     const py = pt.y * ctm.d + ctm.f - stageRect.top;
     els.mapEventPopup.style.transition = instant ? "none" : "";
     els.mapEventPopup.style.left = `${Math.round(px + state.popupOffset.dx)}px`;
@@ -1519,6 +1524,22 @@
       return;
     }
     clearSelection();
+  });
+
+  ["worldTileLeft", "worldTileRight"].forEach((tileId) => {
+    const tileEl = document.getElementById(tileId);
+    if (!tileEl) return;
+    tileEl.addEventListener("click", (e) => {
+      if (state.didDrag) {
+        state.didDrag = false;
+        return;
+      }
+      const hit = e.composedPath().find((el) => el && el.dataset && el.dataset.country);
+      if (hit && hit.dataset.country) {
+        e.stopPropagation();
+        toggleCountry(hit.dataset.country);
+      }
+    });
   });
 
   // 2D Drag panning & mouse-wheel zoom on map
