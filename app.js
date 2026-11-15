@@ -417,7 +417,18 @@
       })
       .join("");
 
-    elMainContent.innerHTML = blocksHtml;
+    const summaryBannerHtml =
+      b && b.summary
+        ? `<section class="daily-summary-banner" aria-label="오늘의 브리핑 요약">
+            <div class="daily-summary-head">
+              <span class="daily-summary-tag">📺 오늘의 브리핑 요약</span>
+              <span class="daily-summary-title">${escapeHtml(b.title || "")}</span>
+            </div>
+            <p class="daily-summary-text">${escapeHtml(b.summary)}</p>
+          </section>`
+        : "";
+
+    elMainContent.innerHTML = summaryBannerHtml + blocksHtml;
   }
 
   function renderSearchResultsList() {
