@@ -1294,20 +1294,20 @@
         <span>최근 1년 추이</span>
         <div class="trend-legend">
           <span><i style="background:#111111"></i>종합</span>
-          <span><i style="background:#0284c7"></i>외교</span>
-          <span><i style="background:#d97706"></i>국내</span>
-          <span><i style="background:#059669"></i>경제</span>
+          <span><i style="background:#dc2626"></i>군사</span>
+          <span><i style="background:#eab308"></i>경제</span>
+          <span><i style="background:#2563eb"></i>사회</span>
         </div>
       </div>
       <svg class="trend-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
         <line x1="${PAD}" y1="${yAt(68).toFixed(1)}" x2="${W - PAD}" y2="${yAt(68).toFixed(1)}" stroke="rgba(220,38,38,0.28)" stroke-dasharray="3 3" stroke-width="0.8" />
         <line x1="${PAD}" y1="${yAt(48).toFixed(1)}" x2="${W - PAD}" y2="${yAt(48).toFixed(1)}" stroke="rgba(217,119,6,0.25)" stroke-dasharray="3 3" stroke-width="0.8" />
         <path d="${areaPath}" fill="rgba(17,17,17,0.07)" />
-        <path d="${toSmoothPath("dip")}" fill="none" stroke="#0284c7" stroke-width="1.15" stroke-opacity="0.78" />
-        <path d="${toSmoothPath("dom")}" fill="none" stroke="#d97706" stroke-width="1.15" stroke-opacity="0.78" />
-        <path d="${toSmoothPath("eco")}" fill="none" stroke="#059669" stroke-width="1.15" stroke-opacity="0.78" />
+        <path d="${toSmoothPath("dip")}" fill="none" stroke="#dc2626" stroke-width="1.25" stroke-opacity="0.85" />
+        <path d="${toSmoothPath("eco")}" fill="none" stroke="#eab308" stroke-width="1.35" stroke-opacity="0.92" />
+        <path d="${toSmoothPath("dom")}" fill="none" stroke="#2563eb" stroke-width="1.25" stroke-opacity="0.85" />
         <path d="${scorePath}" fill="none" stroke="#111111" stroke-width="1.9" />
-        <circle cx="${lx}" cy="${ly}" r="3" fill="#0284c7" stroke="#ffffff" stroke-width="1.2" />
+        <circle cx="${lx}" cy="${ly}" r="3" fill="#dc2626" stroke="#ffffff" stroke-width="1.2" />
       </svg>
       <div class="trend-dates">
         <span>${rawPts[0].d.slice(2)}</span>

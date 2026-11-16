@@ -282,6 +282,112 @@
     return null;
   }
 
+  function renderCountryMiniTrend(dateStr, countryKey, simUrl) {
+    const gs = window.GEOSIM_SUMMARY;
+    if (!gs || !gs.dates || !gs.statusByDate) return "";
+    const targetDate = dateStr || LATEST_DATE;
+    const endIdx = gs.dates.indexOf(targetDate);
+    if (endIdx < 0) return "";
+
+    const [ey, em, ed] = targetDate.split("-").map(Number);
+    const cutoffDate = new Date(Date.UTC(ey - 1, em - 1, ed)).toISOString().slice(0, 10);
+
+    const rawPts = [];
+    for (let i = 0; i <= endIdx; i++) {
+      const d = gs.dates[i];
+      if (d < cutoffDate) continue;
+      const st = (gs.statusByDate[d] || {})[countryKey];
+      if (st) {
+        rawPts.push({
+          d,
+          score: st.score,
+          dip: st.dip ?? st.score,
+          dom: st.dom ?? st.score,
+          eco: st.eco ?? st.score,
+        });
+      }
+    }
+    if (rawPts.length < 2) return "";
+
+    const radius = rawPts.length > 180 ? 3 : rawPts.length > 80 ? 2 : rawPts.length > 35 ? 1 : 0;
+    const smoothed = radius === 0 ? rawPts : rawPts.map((p, idx) => {
+      if (idx === 0 || idx === rawPts.length - 1) return p;
+      const lo = Math.max(0, idx - radius);
+      const hi = Math.min(rawPts.length - 1, idx + radius);
+      let sScore = 0, sDip = 0, sDom = 0, sEco = 0;
+      const cnt = hi - lo + 1;
+      for (let j = lo; j <= hi; j++) {
+        sScore += rawPts[j].score;
+        sDip += rawPts[j].dip;
+        sDom += rawPts[j].dom;
+        sEco += rawPts[j].eco;
+      }
+      return { d: p.d, score: sScore / cnt, dip: sDip / cnt, dom: sDom / cnt, eco: sEco / cnt };
+    });
+
+    const MAX_PTS = 48;
+    let pts = smoothed;
+    if (smoothed.length > MAX_PTS) {
+      pts = [];
+      for (let k = 0; k < MAX_PTS; k++) {
+        pts.push(smoothed[Math.round((k / (MAX_PTS - 1)) * (smoothed.length - 1))]);
+      }
+    }
+
+    const W = 210, H = 64, PAD = 4;
+    const xAt = (idx) => PAD + (idx / (pts.length - 1)) * (W - PAD * 2);
+    const yAt = (val) => H - PAD - ((Math.max(10, Math.min(95, val)) - 10) / 85) * (H - PAD * 2);
+    const clampY = (y) => Math.max(PAD, Math.min(H - PAD, y));
+
+    const toPath = (key) => {
+      const coords = pts.map((p, idx) => ({ x: xAt(idx), y: yAt(p[key]) }));
+      let dStr = `M ${coords[0].x.toFixed(1)},${coords[0].y.toFixed(1)}`;
+      const t = 0.7;
+      for (let i = 0; i < coords.length - 1; i++) {
+        const p0 = coords[Math.max(0, i - 1)];
+        const p1 = coords[i];
+        const p2 = coords[i + 1];
+        const p3 = coords[Math.min(coords.length - 1, i + 2)];
+        const cp1x = p1.x + ((p2.x - p0.x) / 6) * t;
+        const cp1y = clampY(p1.y + ((p2.y - p0.y) / 6) * t);
+        const cp2x = p2.x - ((p3.x - p1.x) / 6) * t;
+        const cp2y = clampY(p2.y - ((p3.y - p1.y) / 6) * t);
+        dStr += ` C ${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`;
+      }
+      return dStr;
+    };
+
+    const last = rawPts[rawPts.length - 1];
+    const lx = xAt(pts.length - 1).toFixed(1);
+    const ly = yAt(last.score).toFixed(1);
+    const scorePath = toPath("score");
+    const areaPath = `${scorePath} L ${lx},${H - PAD} L ${PAD},${H - PAD} Z`;
+
+    return `
+      <a href="${escapeHtml(simUrl)}" target="_blank" rel="noopener noreferrer" class="mini-trend-box" title="GeoSim에서 상세 그래프 보기 ↗">
+        <div class="mini-trend-head">
+          <span class="mini-trend-title">1년 추이</span>
+          <span class="mini-trend-legend">
+            <span><i style="background:#111111"></i>종합</span>
+            <span><i style="background:#dc2626"></i>군사</span>
+            <span><i style="background:#eab308"></i>경제</span>
+            <span><i style="background:#2563eb"></i>사회</span>
+          </span>
+        </div>
+        <svg class="mini-trend-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-label="최근 1년 긴장도 추이">
+          <line x1="${PAD}" y1="${yAt(68).toFixed(1)}" x2="${W - PAD}" y2="${yAt(68).toFixed(1)}" stroke="rgba(220,38,38,0.28)" stroke-dasharray="3 3" stroke-width="0.8" />
+          <line x1="${PAD}" y1="${yAt(48).toFixed(1)}" x2="${W - PAD}" y2="${yAt(48).toFixed(1)}" stroke="rgba(217,119,6,0.24)" stroke-dasharray="3 3" stroke-width="0.8" />
+          <path d="${areaPath}" fill="rgba(17,17,17,0.06)" />
+          <path d="${toPath("dip")}" fill="none" stroke="#dc2626" stroke-width="1.2" stroke-opacity="0.85" />
+          <path d="${toPath("eco")}" fill="none" stroke="#eab308" stroke-width="1.3" stroke-opacity="0.92" />
+          <path d="${toPath("dom")}" fill="none" stroke="#2563eb" stroke-width="1.2" stroke-opacity="0.85" />
+          <path d="${scorePath}" fill="none" stroke="#111111" stroke-width="1.8" />
+          <circle cx="${lx}" cy="${ly}" r="2.6" fill="#dc2626" stroke="#ffffff" stroke-width="1" />
+        </svg>
+      </a>
+    `;
+  }
+
   function renderCountryBriefBox(countryKey, showHistoryBtn, dateStr = state.currentDate) {
     const m = ARCHIVE.countries[countryKey];
     if (!m) return "";
@@ -301,6 +407,7 @@
     }
 
     const simUrl = `sim.html?date=${encodeURIComponent(dateStr || LATEST_DATE)}&country=${encodeURIComponent(countryKey)}`;
+    const miniTrendHtml = renderCountryMiniTrend(dateStr, countryKey, simUrl);
 
     return `
       <div class="country-header-line">
@@ -317,13 +424,16 @@
         </div>
       </div>
       <div class="country-brief-box">
-        <div class="country-brief-specs">
-          <strong>권역:</strong> ${escapeHtml(m.region)} ·
-          <strong>수도:</strong> ${escapeHtml(m.capital)} ·
-          <strong>체제:</strong> ${escapeHtml(m.system)} ·
-          <strong>핵심 경제:</strong> ${escapeHtml(m.economy)}
+        <div class="country-brief-main">
+          <div class="country-brief-specs">
+            <strong>권역:</strong> ${escapeHtml(m.region)} ·
+            <strong>수도:</strong> ${escapeHtml(m.capital)} ·
+            <strong>체제:</strong> ${escapeHtml(m.system)} ·
+            <strong>핵심 경제:</strong> ${escapeHtml(m.economy)}
+          </div>
+          <p class="country-summary">${escapeHtml(m.summary)}</p>
         </div>
-        <p class="country-summary">${escapeHtml(m.summary)}</p>
+        ${miniTrendHtml}
       </div>
     `;
   }

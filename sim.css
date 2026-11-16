@@ -953,6 +953,8 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
   font-size: 10.5px;
   color: var(--text-muted);
   margin-bottom: 4px;
@@ -960,9 +962,11 @@ body {
 
 .trend-legend {
   display: flex;
+  flex-wrap: wrap;
   gap: 7px;
-  font-size: 9.5px;
-  color: #333333;
+  font-size: 10px;
+  font-weight: 600;
+  color: #222222;
 }
 
 .trend-legend span {
@@ -972,8 +976,9 @@ body {
 }
 
 .trend-legend i {
-  width: 7px;
-  height: 2px;
+  width: 10px;
+  height: 3px;
+  border-radius: 2px;
   display: inline-block;
 }
 
