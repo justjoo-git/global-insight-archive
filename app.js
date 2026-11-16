@@ -366,7 +366,7 @@
     return `
       <a href="${escapeHtml(simUrl)}" target="_blank" rel="noopener noreferrer" class="mini-trend-box" title="GeoSim에서 상세 그래프 보기 ↗">
         <div class="mini-trend-head">
-          <span class="mini-trend-title">1년 추이</span>
+          <span class="mini-trend-title">긴장도 추이 (1년)</span>
           <span class="mini-trend-legend">
             <span><i style="background:#111111"></i>종합</span>
             <span><i style="background:#dc2626"></i>외교/정치</span>

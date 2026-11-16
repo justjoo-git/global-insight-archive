@@ -507,11 +507,12 @@ a:focus-visible {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 4px;
+  flex-wrap: wrap;
+  gap: 3px 6px;
   font-family: var(--font-sans);
-  font-size: 0.66rem;
+  font-size: 0.68rem;
   color: var(--ink-muted);
-  margin-bottom: 2px;
+  margin-bottom: 3px;
 }
 
 .mini-trend-title {
