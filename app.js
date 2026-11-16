@@ -369,7 +369,7 @@
           <span class="mini-trend-title">1년 추이</span>
           <span class="mini-trend-legend">
             <span><i style="background:#111111"></i>종합</span>
-            <span><i style="background:#dc2626"></i>군사</span>
+            <span><i style="background:#dc2626"></i>외교/정치</span>
             <span><i style="background:#eab308"></i>경제</span>
             <span><i style="background:#2563eb"></i>사회</span>
           </span>

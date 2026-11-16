@@ -484,7 +484,7 @@ a:focus-visible {
 }
 
 .mini-trend-box {
-  width: 245px;
+  width: 264px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
