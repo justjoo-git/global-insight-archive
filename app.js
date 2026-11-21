@@ -464,7 +464,9 @@
     const ytBtnHtml = b
       ? `<a href="${escapeHtml(b.youtube_url)}" target="_blank" rel="noopener noreferrer" class="action-btn" title="${escapeHtml(b.title)}">📺 ${escapeHtml(b.title)} 보러가기 ↗</a>`
       : "";
-    elEditionYoutubeArea.innerHTML = `<div class="edition-right-tools">${gtHtml}${ytBtnHtml}${geoSimBtnHtml}</div>`;
+    const elTensionSlot = document.getElementById("editionTensionSlot");
+    if (elTensionSlot) elTensionSlot.innerHTML = gtHtml;
+    elEditionYoutubeArea.innerHTML = `<div class="edition-right-tools">${ytBtnHtml}${geoSimBtnHtml}</div>`;
 
     // Filter records for currentDate
     const dayRecords = ARCHIVE.records.filter((r) => r.d === dateStr);
