@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,6 +16,7 @@
       gap: 8px;
       flex-wrap: wrap;
     }
+
     .geosim-tension-pill {
       display: inline-flex;
       align-items: center;
@@ -28,20 +30,43 @@
       color: #111111;
       font-variant-numeric: tabular-nums;
     }
-    .geosim-tension-pill.lvl-calm { background: rgba(5, 150, 105, 0.1); border-color: rgba(5, 150, 105, 0.35); color: #065f46; }
-    .geosim-tension-pill.lvl-watch { background: rgba(3, 105, 161, 0.1); border-color: rgba(3, 105, 161, 0.35); color: #075985; }
-    .geosim-tension-pill.lvl-tense { background: rgba(217, 119, 6, 0.12); border-color: rgba(217, 119, 6, 0.38); color: #92400e; }
-    .geosim-tension-pill.lvl-crisis { background: rgba(220, 38, 38, 0.1); border-color: rgba(220, 38, 38, 0.38); color: #991b1b; }
+
+    .geosim-tension-pill.lvl-calm {
+      background: rgba(5, 150, 105, 0.1);
+      border-color: rgba(5, 150, 105, 0.35);
+      color: #065f46;
+    }
+
+    .geosim-tension-pill.lvl-watch {
+      background: rgba(3, 105, 161, 0.1);
+      border-color: rgba(3, 105, 161, 0.35);
+      color: #075985;
+    }
+
+    .geosim-tension-pill.lvl-tense {
+      background: rgba(217, 119, 6, 0.12);
+      border-color: rgba(217, 119, 6, 0.38);
+      color: #92400e;
+    }
+
+    .geosim-tension-pill.lvl-crisis {
+      background: rgba(220, 38, 38, 0.1);
+      border-color: rgba(220, 38, 38, 0.38);
+      color: #991b1b;
+    }
+
     .geosim-action-btn {
       background: #4b5563 !important;
       color: #fcfbf9 !important;
       border-color: #374151 !important;
       font-weight: 600;
     }
+
     .geosim-action-btn:hover {
       background: #374151 !important;
       border-color: #1f2937 !important;
     }
+
     .country-tension-badge {
       display: inline-flex;
       align-items: center;
@@ -57,21 +82,39 @@
       vertical-align: middle;
       font-variant-numeric: tabular-nums;
     }
-    .country-tension-badge.lvl-red { background: rgba(220, 38, 38, 0.1); border-color: rgba(220, 38, 38, 0.35); color: #991b1b; }
-    .country-tension-badge.lvl-amber { background: rgba(217, 119, 6, 0.12); border-color: rgba(217, 119, 6, 0.38); color: #92400e; }
-    .country-tension-badge.lvl-green { background: rgba(5, 150, 105, 0.1); border-color: rgba(5, 150, 105, 0.35); color: #065f46; }
+
+    .country-tension-badge.lvl-red {
+      background: rgba(220, 38, 38, 0.1);
+      border-color: rgba(220, 38, 38, 0.35);
+      color: #991b1b;
+    }
+
+    .country-tension-badge.lvl-amber {
+      background: rgba(217, 119, 6, 0.12);
+      border-color: rgba(217, 119, 6, 0.38);
+      color: #92400e;
+    }
+
+    .country-tension-badge.lvl-green {
+      background: rgba(5, 150, 105, 0.1);
+      border-color: rgba(5, 150, 105, 0.35);
+      color: #065f46;
+    }
+
     .wiki-pill.geosim-pill {
       background: #4b5563;
       color: #fcfbf9;
       border-color: #374151;
       font-weight: 600;
     }
+
     .wiki-pill.geosim-pill:hover {
       background: #374151;
       border-color: #1f2937;
     }
   </style>
 </head>
+
 <body>
   <div class="newspaper-shell">
     <!-- Classic Broadsheet Masthead -->
@@ -79,10 +122,12 @@
       <div class="masthead-top-row">
         <span id="sinceLabel" class="since-label">Since 2025. 10. 15.</span>
         <div class="masthead-actions">
-          <a href="https://www.youtube.com/@Deep_Insight_Global" target="_blank" rel="noopener noreferrer" class="action-btn">
+          <a href="https://www.youtube.com/@Deep_Insight_Global" target="_blank" rel="noopener noreferrer"
+            class="action-btn">
             📺 유튜브 채널 ↗
           </a>
-          <button type="button" id="toggleSearchBtn" class="action-btn action-btn-primary" aria-expanded="false" aria-controls="searchDrawer">
+          <button type="button" id="toggleSearchBtn" class="action-btn action-btn-primary" aria-expanded="false"
+            aria-controls="searchDrawer">
             🔍 뉴스 검색
           </button>
         </div>
@@ -104,14 +149,8 @@
         <div class="edition-date-nav">
           <button type="button" id="prevDateBtn" class="date-step-btn" title="이전 날짜 지면">◀ 이전호</button>
           <div class="calendar-trigger-wrap" id="calendarTriggerWrap">
-            <button
-              type="button"
-              id="currentEditionLabel"
-              class="current-edition-btn"
-              aria-expanded="false"
-              aria-controls="calendarPopover"
-              title="클릭하여 연도·월·일 달력에서 날짜 선택"
-            >
+            <button type="button" id="currentEditionLabel" class="current-edition-btn" aria-expanded="false"
+              aria-controls="calendarPopover" title="클릭하여 연도·월·일 달력에서 날짜 선택">
               오늘자 지면 로딩 중...
             </button>
             <!-- Interactive Year / Month / Day Newspaper Calendar Popover -->
@@ -125,7 +164,8 @@
                 <button type="button" id="calNextMonthBtn" class="date-step-btn" title="다음 달">▶</button>
               </div>
               <div class="cal-weekdays">
-                <span class="sun">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span class="sat">토</span>
+                <span class="sun">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span
+                  class="sat">토</span>
               </div>
               <div id="calDaysGrid" class="cal-days-grid"></div>
               <div class="cal-footer">
@@ -146,12 +186,8 @@
     <section id="searchDrawer" class="search-drawer" hidden aria-label="뉴스 검색 및 필터">
       <form id="searchForm" class="search-form">
         <div class="search-input-wrap">
-          <input
-            type="search"
-            id="searchInput"
-            placeholder="검색어를 입력하세요 (예: 반도체, 관세, 금리, 원전, 트럼프...)"
-            aria-label="검색어 입력"
-          >
+          <input type="search" id="searchInput" placeholder="검색어를 입력하세요 (예: 반도체, 관세, 금리, 원전, 트럼프...)"
+            aria-label="검색어 입력">
         </div>
 
         <select id="countrySelect" class="filter-select" aria-label="국가 선택">
@@ -186,13 +222,15 @@
         본 사이트의 콘텐츠는 공개된 글로벌 시사 사실(Fact)을 바탕으로 AI가 자체 요약·재구성한 참고용 브리핑이며, 특정 언론사의 원문 기사를 전재하지 않습니다.
       </div>
       <div>
-        <a href="https://www.youtube.com/@Deep_Insight_Global" target="_blank" rel="noopener noreferrer">YouTube @Deep_Insight_Global ↗</a>
+        <a href="https://www.youtube.com/@Deep_Insight_Global" target="_blank" rel="noopener noreferrer">YouTube
+          @Deep_Insight_Global ↗</a>
       </div>
     </footer>
   </div>
 
-  <script src="data/archive_data.js?v=202611210821"></script>
+  <script src="data/archive_data.js?v=202611211332"></script>
   <script src="data/geosim_summary.js?v=20261116a"></script>
   <script src="app.js?v=20261121a"></script>
 </body>
+
 </html>
