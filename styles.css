@@ -1065,3 +1065,89 @@ mark.kw-hit {
   color: var(--ink-primary);
   word-break: keep-all;
 }
+
+/* Editorial Info / Policy Pages & Footer Nav */
+.doc-nav {
+  border-top: 1px solid var(--rule-heavy);
+  padding: 0.5rem 0;
+}
+
+.doc-nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.45rem 0.65rem;
+}
+
+.doc-nav a {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.7rem;
+  border: 1px solid var(--rule-light);
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--ink-secondary);
+}
+
+.doc-nav a:hover,
+.doc-nav a[aria-current="page"] {
+  border-color: var(--rule-heavy);
+  background: var(--ink-primary);
+  color: var(--paper-bg);
+}
+
+.doc-article {
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 0.5rem 0 1.5rem;
+}
+
+.doc-title {
+  font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2rem);
+  margin-bottom: 0.35rem;
+}
+
+.doc-meta {
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  color: var(--ink-muted);
+  margin: 0 0 1.75rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--rule-light);
+}
+
+.doc-section {
+  margin-bottom: 1.75rem;
+}
+
+.doc-section h2 {
+  font-size: 1.15rem;
+  border-bottom: 1px solid var(--rule-heavy);
+  padding-bottom: 0.3rem;
+  margin-bottom: 0.75rem;
+}
+
+.doc-section p,
+.doc-section li {
+  font-size: 0.96875rem;
+  line-height: 1.72;
+  color: var(--ink-secondary);
+}
+
+.doc-section ul,
+.doc-section ol {
+  padding-left: 1.25rem;
+  margin: 0.4rem 0 0.75rem;
+}
+
+.footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.9rem;
+}
