@@ -1151,3 +1151,312 @@ mark.kw-hit {
   align-items: center;
   gap: 0.45rem 0.9rem;
 }
+
+/* ==========================================================================
+   Static SEO Archive Pages (/daily/, /countries/) & Podcast Script View
+   ========================================================================== */
+
+.masthead-home-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.daily-edition-header {
+  margin-bottom: 1rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 2px solid var(--rule-heavy);
+}
+
+.daily-edition-header .doc-title {
+  margin-bottom: 0.3rem;
+}
+
+.daily-edition-meta {
+  font-family: var(--font-sans);
+  font-size: 0.84rem;
+  color: var(--ink-muted);
+  margin: 0;
+}
+
+.daily-nav-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.65rem 0;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--rule-light);
+}
+
+.daily-nav-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.daily-nav-bar .date-step-btn,
+.daily-nav-bar .action-btn {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.daily-nav-bar .is-disabled {
+  opacity: 0.45;
+  pointer-events: none;
+  border-color: var(--rule-light);
+  color: var(--ink-muted);
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  padding: 0.28rem 0.6rem;
+  border-radius: 3px;
+  border: 1px solid var(--rule-light);
+}
+
+.country-profile-link {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 0.2rem 0.6rem;
+  border: 1px solid var(--rule-light);
+  border-radius: 999px;
+  color: var(--ink-secondary);
+  background: var(--paper-surface);
+  white-space: nowrap;
+}
+
+.country-profile-link:hover {
+  border-color: var(--rule-heavy);
+  background: var(--ink-primary);
+  color: var(--paper-bg);
+}
+
+/* Broadcast Script Transcript Section */
+.script-section {
+  margin-top: 2.25rem;
+  padding-top: 1.25rem;
+  border-top: 2px solid var(--rule-heavy);
+}
+
+.script-section-title {
+  font-size: clamp(1.25rem, 1.05rem + 0.8vw, 1.55rem);
+  margin-bottom: 0.35rem;
+}
+
+.script-section-intro {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+  margin: 0 0 1.35rem;
+}
+
+.script-block {
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.15rem;
+  background-color: var(--paper-surface);
+  border: 1px solid var(--rule-hairline);
+  border-left: 3px solid var(--rule-heavy);
+}
+
+.script-block-title {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink-primary);
+  margin: 0 0 0.85rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--rule-light);
+}
+
+.script-dialogue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.script-turn {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+}
+
+.script-speaker {
+  font-family: var(--font-sans);
+  font-size: 0.76rem;
+  font-weight: 700;
+  display: inline-block;
+  align-self: flex-start;
+  padding: 0.12rem 0.5rem;
+  border-radius: 3px;
+  letter-spacing: 0.02em;
+}
+
+.script-speaker.speaker-ana {
+  background-color: var(--ink-primary);
+  color: var(--paper-bg);
+}
+
+.script-speaker.speaker-park {
+  background-color: var(--paper-bg);
+  color: var(--ink-primary);
+  border: 1px solid var(--rule-heavy);
+}
+
+.script-text {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.75;
+  color: var(--ink-primary);
+  max-width: 78ch;
+  word-break: keep-all;
+}
+
+/* Archive Indexes (/daily/ & /countries/{country}/) */
+.archive-index-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.archive-index-item {
+  border: 1px solid var(--rule-hairline);
+  border-left: 3px solid var(--rule-heavy);
+  background-color: var(--paper-bg);
+  padding: 0.9rem 1.1rem;
+}
+
+.archive-index-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem 0.75rem;
+  margin-bottom: 0.35rem;
+}
+
+.archive-index-date {
+  font-family: var(--font-sans);
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--ink-primary);
+  text-decoration: none;
+}
+
+.archive-index-date:hover {
+  text-decoration: underline;
+}
+
+.archive-index-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  color: var(--ink-muted);
+}
+
+.archive-badge {
+  background: var(--paper-surface);
+  border: 1px solid var(--rule-light);
+  padding: 0.1rem 0.45rem;
+  border-radius: 3px;
+}
+
+.archive-index-title {
+  margin: 0 0 0.3rem;
+  font-size: 1.05rem;
+}
+
+.archive-index-title a {
+  text-decoration: none;
+}
+
+.archive-index-title a:hover {
+  text-decoration: underline;
+}
+
+.archive-index-summary {
+  margin: 0;
+  font-size: 0.91rem;
+  line-height: 1.62;
+  color: var(--ink-secondary);
+}
+
+/* Country Hub Grid (/countries/index.html) */
+.country-hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17.5rem, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.country-hub-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.65rem;
+  border: 1px solid var(--rule-hairline);
+  border-top: 3px solid var(--rule-heavy);
+  background-color: var(--paper-bg);
+  padding: 1rem 1.1rem;
+}
+
+.country-hub-card h2 {
+  font-size: 1.12rem;
+  margin: 0 0 0.25rem;
+}
+
+.country-hub-card h2 a {
+  text-decoration: none;
+}
+
+.country-hub-card h2 a:hover {
+  text-decoration: underline;
+}
+
+.country-hub-sub {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+  margin: 0 0 0.45rem;
+}
+
+.country-hub-desc {
+  margin: 0;
+  font-size: 0.89rem;
+  line-height: 1.58;
+  color: var(--ink-secondary);
+}
+
+.country-hub-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-sans);
+  font-size: 0.76rem;
+  color: var(--ink-muted);
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--rule-hairline);
+}
+
+@media (max-width: 44rem) {
+  .script-block {
+    padding: 0.85rem 0.9rem;
+  }
+
+  .daily-nav-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .daily-nav-group {
+    justify-content: space-between;
+  }
+}
