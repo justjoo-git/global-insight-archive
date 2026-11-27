@@ -76,6 +76,9 @@ a:focus-visible {
 
 /* Masthead */
 .masthead {
+  container: masthead / inline-size;
+  position: relative;
+  z-index: 20;
   border-top: 0.25rem solid var(--rule-heavy);
   border-bottom: 0.25rem double var(--rule-heavy);
   margin-bottom: 1.5rem;
@@ -199,8 +202,18 @@ a:focus-visible {
 
 .edition-date-nav {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.6rem;
+}
+
+#editionTensionSlot {
+  display: inline-flex;
+  align-items: center;
+}
+
+#editionTensionSlot:empty {
+  display: none;
 }
 
 .current-edition-label,
@@ -229,6 +242,7 @@ a:focus-visible {
 .calendar-trigger-wrap {
   position: relative;
   display: inline-flex;
+  min-inline-size: 0;
 }
 
 .calendar-popover {
@@ -352,6 +366,8 @@ a:focus-visible {
 }
 
 .date-step-btn {
+  flex-shrink: 0;
+  white-space: nowrap;
   background: transparent;
   border: 1px solid var(--rule-light);
   color: var(--ink-secondary);
@@ -831,53 +847,6 @@ mark.kw-hit {
     font-size: 0.8125rem;
   }
 
-  .edition-bar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.45rem;
-    padding: 0.55rem 0;
-  }
-
-  .edition-date-nav {
-    justify-content: space-between;
-    width: 100%;
-    gap: 0.35rem;
-  }
-
-  .current-edition-label,
-  .current-edition-btn {
-    font-size: 0.85rem;
-    justify-content: center;
-    width: 100%;
-  }
-
-  .calendar-trigger-wrap {
-    flex: 1;
-    display: flex;
-  }
-
-  .calendar-popover {
-    left: 50%;
-    transform: translateX(-50%);
-    width: min(20.5rem, 92vw);
-  }
-
-  .cal-select {
-    font-size: 1rem;
-    min-height: 2.25rem;
-  }
-
-  .date-step-btn {
-    min-height: 2.15rem;
-    padding: 0.25rem 0.6rem;
-    font-size: 0.78rem;
-  }
-
-  #editionYoutubeArea .action-btn {
-    width: 100%;
-    justify-content: center;
-  }
-
   /* Prevent iOS Safari auto-zoom on input focus (requires >= 16px / 1rem) and enlarge touch targets */
   .search-drawer {
     padding: 0.85rem;
@@ -946,6 +915,109 @@ mark.kw-hit {
   .daily-summary-text {
     font-size: 0.92rem;
     line-height: 1.65;
+  }
+}
+
+@container masthead (inline-size <= 40rem) {
+  .edition-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+    padding: 0.55rem 0;
+  }
+
+  .edition-date-nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    inline-size: 100%;
+    gap: 0.45rem 0.35rem;
+  }
+
+  .calendar-trigger-wrap {
+    flex: 1 1 0;
+    min-inline-size: 0;
+    display: flex;
+  }
+
+  .current-edition-label,
+  .current-edition-btn {
+    inline-size: 100%;
+    justify-content: center;
+    text-align: center;
+    font-size: clamp(0.75rem, 3.3cqi, 0.875rem);
+    line-height: 1.3;
+    padding: 0.3rem 0.45rem;
+    text-wrap: balance;
+  }
+
+  .calendar-popover {
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(20.5rem, 92vw);
+  }
+
+  .cal-select {
+    font-size: 1rem;
+    min-block-size: 2.25rem;
+  }
+
+  .date-step-btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    min-block-size: 2.15rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.78rem;
+  }
+
+  /* Row 2: Global Tension on its own full-width line below Date Navigation */
+  #editionTensionSlot {
+    flex: 1 0 100%;
+    display: flex;
+    justify-content: center;
+  }
+
+  #editionTensionSlot:empty {
+    display: none;
+  }
+
+  #editionTensionSlot .geosim-tension-pill {
+    inline-size: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  /* Keep "오늘자 지면으로" on its own line on older dates without squeezing Row 1 */
+  #todayDateBtn {
+    flex: 1 0 100%;
+    text-align: center;
+  }
+
+  /* Row 3: YouTube Link (& GeoSim) full-width below Global Tension */
+  #editionYoutubeArea {
+    inline-size: 100%;
+  }
+
+  #editionYoutubeArea .edition-right-tools {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.45rem;
+  }
+
+  #editionYoutubeArea .action-btn {
+    inline-size: 100%;
+    justify-content: center;
+    text-align: center;
+    white-space: normal;
+    line-height: 1.35;
+  }
+}
+
+@media (pointer: coarse) {
+  .edition-bar :where(button, a.action-btn) {
+    min-block-size: 44px;
+    min-inline-size: 44px;
   }
 }
 
